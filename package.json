@@ -1,5 +1,5 @@
 {
-  "name": "subsidie-aanvragen-management-service",
+  "name": "subsidy-applications-management-service",
   "version": "0.1.0",
   "description": "Service that provides management off everything related to \"subsidie aanvragen\" forms",
   "main": "app.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lblod/subsidie-aanvragen-management-service.git"
+    "url": "git+https://github.com/lblod/subsidy-applications-management-service.git"
   },
   "author": "lblod",
   "license": "MIT"

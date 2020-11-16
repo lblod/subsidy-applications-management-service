@@ -1,4 +1,4 @@
-# subsidie-aanvragen-management-service
+# subsidy-applications-management-service
 
 Service that provides management off everything related to "subsidie aanvragen" forms
 
@@ -8,8 +8,8 @@ To add the service to your `mu.semte.ch` stack, add the following snippet to doc
 
 ```yaml
 services:
-  subsidie-aanvragen-managment:
-    image: lblod/subsidie-aanvragen-management-service:x.x.x
+  subsidy-applications-managment:
+    image: lblod/subsidy-applications-management-service:x.x.x
 ```
 ## Configuration
 
@@ -28,7 +28,7 @@ we would recommend reading "[Developing with the template](https://github.com/mu
 Paste the following snip-it in your `docker-compose.override.yml`:
 
 ````yaml  
-subsidie-aanvragen-managment:
+subsidy-applications-managment:
   image: semtech/mu-javascript-template:1.4.0
   ports:
     - 8888:80
