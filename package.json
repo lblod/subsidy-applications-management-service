@@ -1,7 +1,7 @@
 {
   "name": "subsidy-applications-management-service",
   "version": "0.1.0",
-  "description": "Service that provides management off everything related to \"subsidie aanvragen\" forms",
+  "description": "Service that provides management related to subsidy-applications (subsidie aanvragen) semantic forms.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,5 +11,8 @@
     "url": "git+https://github.com/lblod/subsidy-applications-management-service.git"
   },
   "author": "lblod",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^9.0.1"
+  }
 }
