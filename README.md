@@ -16,7 +16,7 @@ To add the service to your `mu.semte.ch` stack, add the following snippet to doc
 
 ```yaml
 services:
-  subsidy-applications-managment:
+  subsidy-applications-management:
     image: lblod/subsidy-applications-management-service:x.x.x
     volumes:
       - ./config/semanctic-form-path:/share
@@ -68,7 +68,7 @@ reading "[Developing with the template](https://github.com/mu-semtech/mu-javascr
 Paste the following snip-it in your `docker-compose.override.yml`:
 
 ````yaml  
-subsidy-applications-managment:
+subsidy-applications-management:
   image: semtech/mu-javascript-template:1.4.0
   ports:
     - 8888:80
