@@ -33,7 +33,7 @@ services:
 
 ## API
 
-### GET /subsidy-applications-form-data/
+### GET /active-form-data/
 
 > Retrieve the active form/form-data.
 

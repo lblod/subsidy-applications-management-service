@@ -10,7 +10,7 @@ app.get('/', function(req, res) {
 /**
  * Returns the **active** form-data in `text/turtle` format
  */
-app.get('/subsidy-applications-form-data', async function(req, res, next) {
+app.get('/active-form-data', async function(req, res, next) {
   try {
     const form = await getFormData();
     // TODO can we go from text-turtle to application/n-triples? (consistency)
