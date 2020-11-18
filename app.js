@@ -12,14 +12,15 @@ app.get('/', function(req, res) {
  */
 app.get('/active-form-data', async function(req, res, next) {
   try {
-    const form = await getFormData();
-    // TODO can we go from text-turtle to application/n-triples? (consistency)
-    return res.status(200).set('content-type', 'text/turtle').send(form);
+    const ttl = await getFormData();
+    return res.status(200).set('content-type', 'text/turtle').send(ttl);
   } catch (e) {
     console.log(`Something went wrong while retrieving the form-data:`);
     console.log(e);
     return next(e);
   }
 });
+
+
 
 app.use(errorHandler);
