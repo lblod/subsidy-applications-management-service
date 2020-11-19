@@ -6,8 +6,8 @@ import { ApplicationForm } from './lib/application-form';
 import { getFileContent } from './lib/util/file';
 import { ACTIVE_FORM_URI } from './env';
 
+// TODO add simple check to ensure everything required is in place?
 export const CONFIGURATION = require('/share/config.json');
-console.log(CONFIGURATION);
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -21,6 +21,7 @@ app.get('/', function(req, res) {
 });
 
 /**
+ * [DEPRECATED]
  * Returns the **active** form-data in `text/turtle` format
  */
 app.get('/active-form-data', async function(req, res, next) {
@@ -34,6 +35,16 @@ app.get('/active-form-data', async function(req, res, next) {
   }
 });
 
+/**
+ * Retrieves all the (meta)data needed to construct a from on the client side for the given application-form.
+ *
+ * @param uuid - unique identifier of the application-form to retrieve the form (meta)data for.
+ *
+ * @returns Object {
+ *   form - the form triples, used to construct the actual visualisation off the form (format: `application/n-triples`)
+ *   source - the source triples, all the model data for the application-form  (format: `application/n-triples`)
+ * }
+ */
 app.get('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
@@ -54,6 +65,12 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
   }
 });
 
+/**
+ * Updates the source-data for the given application-form based on the given delta {additions, removals}.
+ *
+ * @param uuid - unique identifier of the application-form to update
+ * @body delta {additions, removals} - object containing the triples to be added and removed.
+ */
 app.put('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
@@ -72,6 +89,11 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
   }
 });
 
+/**
+ * Delete all the source-data for the given application-form.
+ *
+ * @param uuid - unique identifier of the application-form to be deleted
+ */
 app.delete('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
 
