@@ -36,7 +36,7 @@ app.get('/active-form-data', async function(req, res, next) {
 });
 
 /**
- * Retrieves all the (meta)data needed to construct a from on the client side for the given application-form.
+ * Retrieves all the (meta)data needed to construct a form on the client side for the given application-form.
  *
  * @param uuid - unique identifier of the application-form to retrieve the form (meta)data for.
  *
