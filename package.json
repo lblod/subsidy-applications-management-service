@@ -13,6 +13,9 @@
   "author": "lblod",
   "license": "MIT",
   "dependencies": {
-    "fs-extra": "^9.0.1"
+    "@lblod/mu-auth-sudo": "^0.2.0",
+    "body-parser": "^1.19.0",
+    "fs-extra": "^9.0.1",
+    "rdflib": "^2.1.1"
   }
 }
