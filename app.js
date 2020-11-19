@@ -2,13 +2,12 @@ import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
 
-import { updateSourceData } from './lib/source-data';
 import { ApplicationForm } from './lib/application-form';
 import { getFileContent } from './lib/util/file';
 import { ACTIVE_FORM_URI } from './env';
 
-// TODO parser
-//  look up more in depth on how to use this
+export const CONFIGURATION = require('/share/config.json');
+console.log(CONFIGURATION);
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -23,7 +22,6 @@ app.get('/', function(req, res) {
 
 /**
  * Returns the **active** form-data in `text/turtle` format
- * TODO change this endpoint to just return the URI off the active-form
  */
 app.get('/active-form-data', async function(req, res, next) {
   try {
@@ -61,10 +59,30 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
   const delta = req.body;
 
   try {
-    await new ApplicationForm().init(uuid); // NOTE check to ensure
-    await updateSourceData(delta);
+    const applicationForm = await new ApplicationForm().init(uuid);
+    await applicationForm.update(delta);
     return res.status(204).send();
   } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/vnd.api+json').send({message: e.message});
+    }
+    console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
+    console.log(e);
+    return next(e);
+  }
+});
+
+app.delete('/application-forms/:uuid', async function(req, res, next) {
+  const uuid = req.params.uuid;
+
+  try {
+    const applicationForm = await new ApplicationForm().init(uuid);
+    await applicationForm.delete();
+    return res.status(204).send();
+  } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/vnd.api+json').send({message: e.message});
+    }
     console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
