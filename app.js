@@ -6,9 +6,6 @@ import { ApplicationForm } from './lib/application-form';
 import { getFileContent } from './lib/util/file';
 import { ACTIVE_FORM_URI, META_DATA_URI } from './env';
 
-// TODO add simple check to ensure everything required is in place?
-export const CONFIGURATION = require('/share/config.json');
-
 app.use(bodyParser.json({
   type: function(req) {
     return /^application\/json/.test(req.get('content-type'));
