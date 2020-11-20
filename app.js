@@ -21,21 +21,6 @@ app.get('/', function(req, res) {
 });
 
 /**
- * [DEPRECATED]
- * Returns the **active** form-data in `text/turtle` format
- */
-app.get('/active-form-data', async function(req, res, next) {
-  try {
-    const ttl = await getFileContent(ACTIVE_FORM_URI);
-    return res.status(200).set('content-type', 'text/turtle').send(ttl);
-  } catch (e) {
-    console.log(`Something went wrong while retrieving the form-data:`);
-    console.log(e);
-    return next(e);
-  }
-});
-
-/**
  * Returns the active form file.
  */
 app.get('/active-form-file', async function(req, res) {
