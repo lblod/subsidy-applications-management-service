@@ -36,6 +36,19 @@ app.get('/active-form-data', async function(req, res, next) {
 });
 
 /**
+ * Returns the active form file.
+ */
+app.get('/active-form-file', async function(req, res) {
+  return res.status(200).set('content-type', 'application/json').send({
+    type: "form-file",
+    id: "1",
+    attributes: {
+      uri: ACTIVE_FORM_URI,
+    }
+  });
+});
+
+/**
  * Retrieves all the (meta)data needed to construct a form on the client side for the given application-form.
  *
  * @param uuid - unique identifier of the application-form to retrieve the form (meta)data for.
@@ -43,7 +56,9 @@ app.get('/active-form-data', async function(req, res, next) {
  * @returns Object {
  *   form - the form triples, used to construct the actual visualisation off the form (format: `application/n-triples`)
  *   source - the source triples, all the model data for the application-form  (format: `application/n-triples`)
+ *   meta - the meta triples, all the meta data used to construct the actual visualisation off the form  (format: `application/n-triples`)
  * }
+ *
  */
 app.get('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
@@ -52,14 +67,14 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
     const source = applicationForm.source;
     const form = applicationForm.form;
     const meta = await getFileContent(META_DATA_URI);
-    return res.status(200).set('content-type', 'application/vnd.api+json').send({
+    return res.status(200).set('content-type', 'application/json').send({
       form,
       source,
-      meta
+      meta,
     });
   } catch (e) {
     if (e.status) {
-      return res.status(e.status).set('content-type', 'application/vnd.api+json').send({message: e.message});
+      return res.status(e.status).set('content-type', 'application/json').send(e);
     }
     console.log(`Something unexpected went wrong while retrieving the application-form with uuid <${uuid}>`);
     console.log(e);
@@ -83,7 +98,7 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
-      return res.status(e.status).set('content-type', 'application/vnd.api+json').send({message: e.message});
+      return res.status(e.status).set('content-type', 'application/json').send(e);
     }
     console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
     console.log(e);
@@ -105,7 +120,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
-      return res.status(e.status).set('content-type', 'application/vnd.api+json').send({message: e.message});
+      return res.status(e.status).set('content-type', 'application/json').send(e);
     }
     console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
     console.log(e);
