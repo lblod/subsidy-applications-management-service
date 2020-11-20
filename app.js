@@ -48,7 +48,14 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
     const applicationForm = await new ApplicationForm().init(uuid);
     const source = applicationForm.source;
     const form = applicationForm.form;
-    const meta = await getFileContent(META_DATA_URI);
+    let meta = "";
+    try {
+      meta = await getFileContent(META_DATA_URI);
+    }
+    catch (e) {
+      // can fail for now (user not required to supply a meta-file)
+      console.log(`no ${META_DATA_URI} could be found, meta-data will be empty`);
+    }
     return res.status(200).set('content-type', 'application/json').send({
       form,
       source,
