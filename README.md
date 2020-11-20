@@ -112,6 +112,26 @@ form:6b70a6f0-cce2-4afe-81f5-5911f45b0b27 a form:Form ;
 
 ## API
 
+### Get the current active form file.
+
+> **GET** `/active-form-file`
+
+```
+HTTP/1.1 
+200 OK
+X-Powered-By: Express
+content-type: application/json; charset=utf-8
+Date: Tue, 17 Nov 2020 08:47:01 GMT
+
+{
+  type: "form-file",
+  id: "1",
+  attributes: {
+    uri: "/share/example-form-uri.ttl",
+  }
+}
+```
+
 ### Get all the meta(data) needed to construct a semantic form for an application-form.
 
 > **GET** `/application-forms/:uuid`
@@ -119,9 +139,10 @@ form:6b70a6f0-cce2-4afe-81f5-5911f45b0b27 a form:Form ;
 #### Response
 
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 
+200 OK
 X-Powered-By: Express
-content-type: application/vnd.api+json; charset=utf-8
+content-type: application/json; charset=utf-8
 Date: Tue, 17 Nov 2020 08:47:01 GMT
 
 {
@@ -129,6 +150,7 @@ Date: Tue, 17 Nov 2020 08:47:01 GMT
   "source": ""
 }
 ```
+
 ### Update the source-data based on a given delta for an application-form
 
 > **PUT** `/application-forms/:uuid`
@@ -138,8 +160,8 @@ Date: Tue, 17 Nov 2020 08:47:01 GMT
 HTTP/1.1
 Connection: keep-alive
 Content-Length: xxx
-content-type: application/vnd.api+json
-Accept: */*
+content-type: application/json
+Accept: application/json
 
 {
   "additions": "",
@@ -153,7 +175,8 @@ Accept: */*
 
 #### Response
 ```
-HTTP/1.1 204 No Content
+HTTP/1.1 
+204 No Content
 x-powered-by: Express
 Date: Tue, 17 Nov 2020 08:47:01 GMT
 ```
