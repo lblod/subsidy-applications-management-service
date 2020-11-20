@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 
 import { ApplicationForm } from './lib/application-form';
 import { getFileContent } from './lib/util/file';
-import { ACTIVE_FORM_URI } from './env';
+import { ACTIVE_FORM_URI, META_DATA_URI } from './env';
 
 // TODO add simple check to ensure everything required is in place?
 export const CONFIGURATION = require('/share/config.json');
@@ -50,10 +50,12 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
   try {
     const applicationForm = await new ApplicationForm().init(uuid);
     const source = applicationForm.source;
-    const form = await getFileContent(applicationForm.formURI ? applicationForm.formURI : ACTIVE_FORM_URI);
+    const form = applicationForm.form;
+    const meta = await getFileContent(META_DATA_URI);
     return res.status(200).set('content-type', 'application/vnd.api+json').send({
       form,
       source,
+      meta
     });
   } catch (e) {
     if (e.status) {
