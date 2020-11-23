@@ -4,7 +4,7 @@ const META_DATA = process.env.META_DATA || 'meta.ttl';
 const ACTIVE_FORM_URI = `share://${ACTIVE_FORM}`;
 const META_DATA_URI = `share://${META_DATA}`;
 
-const CONFIG = require('/share/config.json') || {
+const DEFAULT_CONFIG = {
   'application-form': {
     prefixes: [
       'PREFIX mu: <http://mu.semte.ch/vocabularies/core/>',
@@ -17,9 +17,12 @@ const CONFIG = require('/share/config.json') || {
   },
 };
 
+const USER_CONFIG = require('/share/config.json') || DEFAULT_CONFIG;
+
 export {
   ACTIVE_FORM,
   ACTIVE_FORM_URI,
   META_DATA_URI,
-  CONFIG,
+  DEFAULT_CONFIG,
+  USER_CONFIG,
 };
