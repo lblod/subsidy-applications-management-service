@@ -120,7 +120,6 @@ app.post('/application-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
     const applicationForm = await new ApplicationForm().init(uuid);
-    // TODO add submitted check
     await applicationForm.submit();
     return res.status(204).send();
   } catch (e) {
