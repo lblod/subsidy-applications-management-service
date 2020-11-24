@@ -22,11 +22,11 @@ app.get('/', function(req, res) {
  */
 app.get('/active-form-file', async function(req, res) {
   return res.status(200).set('content-type', 'application/json').send({
-    type: "form-file",
-    id: "1",
+    type: 'form-file',
+    id: '1',
     attributes: {
       uri: ACTIVE_FORM_URI,
-    }
+    },
   });
 });
 
@@ -48,11 +48,10 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
     const applicationForm = await new ApplicationForm().init(uuid);
     const source = applicationForm.source;
     const form = applicationForm.form;
-    let meta = "";
+    let meta = '';
     try {
       meta = await getFileContent(META_DATA_URI);
-    }
-    catch (e) {
+    } catch (e) {
       // can fail for now (user not required to supply a meta-file)
       console.log(`no ${META_DATA_URI} could be found, meta-data will be empty`);
     }
@@ -112,6 +111,23 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
     console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
+    console.log(e);
+    return next(e);
+  }
+});
+
+app.post('/application-forms/:uuid/submit', async function(req, res, next) {
+  const uuid = req.params.uuid;
+  try {
+    const applicationForm = await new ApplicationForm().init(uuid);
+    // TODO add submitted check
+    await applicationForm.submit();
+    return res.status(204).send();
+  } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/json').send(e);
+    }
+    console.log(`Something went wrong while submitting application-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }

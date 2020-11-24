@@ -10,7 +10,7 @@ const DEFAULT_CONFIG = {
       'PREFIX mu: <http://mu.semte.ch/vocabularies/core/>',
       'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>',
     ],
-    paths: [
+    properties: [
       'rdf:type',
       'mu:uuid',
     ],
