@@ -1,8 +1,13 @@
+// TODO to be deprecated
 const ACTIVE_FORM = process.env.ACTIVE_FORM || 'form.ttl';
+
 const META_DATA = process.env.META_DATA || 'meta.ttl';
+const FORM_DATA_DIR = process.env.FORM_DATA_DIR || '/share/form-versions/';
+const SERVICE_NAME = process.env.SERVICE_NAME || 'semantic-form-management-service';
 
 const ACTIVE_FORM_URI = `share://${ACTIVE_FORM}`;
 const META_DATA_URI = `share://${META_DATA}`;
+const APP_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
 
 const DEFAULT_CONFIG = {
   'application-form': {
@@ -25,4 +30,6 @@ export {
   META_DATA_URI,
   DEFAULT_CONFIG,
   USER_CONFIG,
+  FORM_DATA_DIR,
+  APP_URI,
 };
