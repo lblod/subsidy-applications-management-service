@@ -5,7 +5,8 @@ import bodyParser from 'body-parser';
 import { ApplicationForm } from './lib/application-form';
 import { getFileContent } from './lib/util/file';
 import { META_DATA_URI } from './env';
-import { getActiveFormDataURI, syncFormData } from './lib/form-data';
+import { syncFormData } from './lib/form-data';
+import { waitForDatabase } from './lib/util/database';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -18,10 +19,9 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-// TODO implement wait for database
-syncFormData().then(async () => console.log(await getActiveFormDataURI())).catch(e => {
-  console.log('Something went wrong while syncing form-data:');
-  console.error(e);
+waitForDatabase().then(async () => {
+  const active = await syncFormData();
+  console.log(`${active.filename} is marked the current active form-data file.`);
 });
 
 /**
@@ -29,14 +29,8 @@ syncFormData().then(async () => console.log(await getActiveFormDataURI())).catch
  */
 app.get('/active-form-file', async function(req, res) {
   try {
-    await syncFormData();
-    return res.status(200).set('content-type', 'application/json').send({
-      type: 'form-file',
-      id: '1',
-      attributes: {
-        uri: await getActiveFormDataURI(),
-      },
-    });
+    const file = await syncFormData();
+    return res.status(200).set('content-type', 'application/json').send(file.json);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
