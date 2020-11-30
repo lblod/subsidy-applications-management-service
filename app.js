@@ -2,7 +2,7 @@ import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
 
-import { ApplicationForm } from './lib/application-form';
+import { Form } from './lib/form';
 import { getFileContent } from './lib/util/file';
 import { META_DATA_URI } from './env';
 import { syncFormData } from './lib/form-data';
@@ -56,7 +56,7 @@ app.get('/active-form-file', async function(req, res) {
 app.get('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new ApplicationForm().init(uuid);
+    const applicationForm = await new Form().init(uuid);
     const source = applicationForm.source;
     const form = applicationForm.form;
     let meta = '';
@@ -92,7 +92,7 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
   const delta = req.body;
 
   try {
-    const applicationForm = await new ApplicationForm().init(uuid);
+    const applicationForm = await new Form().init(uuid);
     await applicationForm.update(delta);
     return res.status(204).send();
   } catch (e) {
@@ -114,7 +114,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
 
   try {
-    const applicationForm = await new ApplicationForm().init(uuid);
+    const applicationForm = await new Form().init(uuid);
     await applicationForm.delete();
     return res.status(204).send();
   } catch (e) {
@@ -130,7 +130,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
 app.post('/application-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new ApplicationForm().init(uuid);
+    const applicationForm = await new Form().init(uuid);
     await applicationForm.submit();
     return res.status(204).send();
   } catch (e) {
