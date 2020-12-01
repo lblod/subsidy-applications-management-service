@@ -21,7 +21,7 @@ app.get('/', function(req, res) {
 
 waitForDatabase().then(async () => {
   const active = await syncFormFiles();
-  console.log(`${active.filename} is marked the current active form-data file.`);
+  console.log(`${active.uri} is marked the current active form-data file.`);
 });
 
 /**
