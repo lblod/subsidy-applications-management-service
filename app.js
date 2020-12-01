@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import { Form } from './lib/form';
 import { getFileContent } from './lib/util/file';
 import { META_DATA_URI } from './env';
-import { syncFormData } from './lib/form-data';
+import { getActiveFormFile, syncFormFiles } from './lib/form-data';
 import { waitForDatabase } from './lib/util/database';
 
 app.use(bodyParser.json({
@@ -20,7 +20,7 @@ app.get('/', function(req, res) {
 });
 
 waitForDatabase().then(async () => {
-  const active = await syncFormData();
+  const active = await syncFormFiles();
   console.log(`${active.filename} is marked the current active form-data file.`);
 });
 
@@ -29,13 +29,13 @@ waitForDatabase().then(async () => {
  */
 app.get('/active-form-file', async function(req, res) {
   try {
-    const file = await syncFormData();
+    const file = await getActiveFormFile();
     return res.status(200).set('content-type', 'application/json').send(file.json);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something unexpected went wrong while retrieving the active-form-file with uuid <${uuid}>`);
+    console.log(`Something unexpected went wrong while retrieving the active-form-file.`);
     console.log(e);
     return next(e);
   }
