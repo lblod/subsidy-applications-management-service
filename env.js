@@ -1,6 +1,6 @@
 
 const META_DATA = process.env.META_DATA || 'meta.ttl';
-const FORM_DATA_DIR = process.env.FORM_DATA_DIR || '/share/form-versions/';
+const FORM_DATA_DIR = process.env.FORM_DATA_DIR || '/share/form-files/';
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 
 const META_DATA_URI = `share://${META_DATA}`;
