@@ -2,6 +2,7 @@
 const META_DATA = process.env.META_DATA || 'meta.ttl';
 const FORM_DATA_DIR = process.env.FORM_DATA_DIR || '/share/form-files/';
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
+const DATA_QUERY_CHUNK_SIZE = process.env.DATA_QUERY_CHUNK_SIZE || 50;
 
 const META_DATA_URI = `share://${META_DATA}`;
 const APP_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
@@ -27,4 +28,5 @@ export {
   USER_CONFIG,
   FORM_DATA_DIR,
   APP_URI,
+  DATA_QUERY_CHUNK_SIZE
 };
