@@ -1,6 +1,6 @@
 {
   "name": "subsidy-applications-management-service",
-  "version": "0.2.0-alpha.14",
+  "version": "0.2.0-alpha.15",
   "description": "Service that provides management related to subsidy-applications (subsidie aanvragen) semantic forms.",
   "main": "app.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "author": "lblod",
   "license": "MIT",
   "dependencies": {
-    "@lblod/submission-form-helpers": "^1.1.8",
+    "@lblod/submission-form-helpers": "^1.1.10",
     "@lblod/mu-auth-sudo": "^0.2.0",
     "body-parser": "^1.19.0",
     "fs-extra": "^9.0.1",
