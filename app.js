@@ -7,6 +7,7 @@ import { getFileContent } from './lib/util/file';
 import { META_DATA_URI } from './env';
 import { getActiveFormFile, syncFormFiles } from './lib/form-data';
 import { waitForDatabase } from './lib/util/database';
+import { VersionService } from './lib/versioning/version-service';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -19,18 +20,22 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
+let versionService;
+
 waitForDatabase().then(async () => {
-  const active = await syncFormFiles();
-  console.log(`${active.uri} is marked the current active form-data file.`);
+  // const active = await syncFormFiles();
+  // console.log(`${active.uri} is marked the current active form-data file.`);
+  versionService = new VersionService();
+  await versionService.sync();
 });
 
 /**
  * Returns the active form file.
  */
-app.get('/active-form-file', async function(req, res) {
+app.get('/active-form-file', async function(req, res, next) {
   try {
-    const file = await getActiveFormFile();
-    return res.status(200).set('content-type', 'application/json').send(file.json);
+    const dir = versionService.active;
+    return res.status(200).set('content-type', 'application/json').send(dir.json);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
