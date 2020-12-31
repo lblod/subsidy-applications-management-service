@@ -61,16 +61,10 @@ app.get('/active-form-file', async function(req, res, next) {
 app.get('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new Form().init(uuid);
+    const applicationForm = await new Form(versionService).init(uuid);
     const source = applicationForm.source;
     const form = applicationForm.form;
-    let meta = '';
-    try {
-      meta = await getFileContent(META_DATA_URI);
-    } catch (e) {
-      // can fail for now (user not required to supply a meta-file)
-      console.log(`no ${META_DATA_URI} could be found, meta-data will be empty`);
-    }
+    const meta = applicationForm.meta;
     return res.status(200).set('content-type', 'application/json').send({
       form,
       source,
@@ -97,7 +91,7 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
   const delta = req.body;
 
   try {
-    const applicationForm = await new Form().init(uuid);
+    const applicationForm = await new Form(versionService).init(uuid);
     await applicationForm.update(delta);
     return res.status(204).send();
   } catch (e) {
@@ -119,7 +113,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
 
   try {
-    const applicationForm = await new Form().init(uuid);
+    const applicationForm = await new Form(versionService).init(uuid);
     await applicationForm.delete();
     return res.status(204).send();
   } catch (e) {
@@ -135,7 +129,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
 app.post('/application-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new Form().init(uuid);
+    const applicationForm = await new Form(versionService).init(uuid);
     await applicationForm.submit();
     return res.status(204).send();
   } catch (e) {
