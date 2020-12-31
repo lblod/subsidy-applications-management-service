@@ -117,6 +117,11 @@ app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   }
 });
 
+/**
+ * Submit the given semantic-form.
+ *
+ * @param uuid - unique identifier of the semantic-form to be submitted
+ */
 app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {

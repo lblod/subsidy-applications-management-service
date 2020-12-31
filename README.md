@@ -1,10 +1,29 @@
 # subsidy-applications-management-service
 
-Service that provides management related to subsidy-applications (subsidie aanvragen) semantic forms.
+Service that provides management related to subsidy-applications (subsidie-aanvragen) semantic-forms.
 
 This includes but is not limited to:
-- providing all the (meta)data needed to construct a semantic form
-- updating and deleting source-data
+- semantic-form versioning
+- providing all the (meta)data needed to construct/visualize a semantic-form
+- updating and deleting the source-data of a semantic-form
+- submitting a semantic-form
+
+## Table of contents
+
+- [**Installation**](#installation)
+    - [**Environment variables**](#environment-variables)
+- [**Configuration**](#configuration)
+    - [**Form versioning**](#form-versioning)
+        - [**Files: config.json**](#configuration-files-configjson)
+        - [**Files: turtle files**](#configuration-files-turtle-files)
+- [**API**](#api)
+    - [**Get the current active form directory.**](#get-the-current-active-form-directory)
+    - [**Get all the meta(data) needed to construct a semantic form.**](#get-all-the-metadata-needed-to-construct-a-semantic-form)
+    - [**Update the source-data based on a given delta**](#update-the-source-data-based-on-a-given-delta)
+    - [**Delete all the source-data for a semantic-form**](#delete-all-the-source-data-for-a-semantic-form)
+    - [**Submit a semantic-form**](#submit-a-semantic-form)
+- [**Developing in the `mu.semte.ch` stack**](#development)
+
 
 ## Installation
 
@@ -17,47 +36,82 @@ services:
     volumes:
       - ./config/semanctic-form-path:/share
 ```
-> **NOTE**: Make sure to mount `/share` as this folder should contain the configuration for this service to work correctly
+> **NOTE**: Make sure to mount the `/share` directory as this location should contain all the configuration for this 
+> service to work correctly.
+
+### Environment variables
+
+Provided [environment variables](https://docs.docker.com/compose/environment-variables/) by the service. These can be added in within the docker declaration.
+
+| Name                     | Description                                                          | Default                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `SERVICE_NAME`           | The name off the service                                             | `subsidy-application-management-service`                       |
+| `DATA_QUERY_CHUNK_SIZE`  | Represents the max amount off triples allowed within a query request | `50`                                                           |
+| `FORM_VERSION_DIRECTORY` | Root directory off the form version directories                      | `/share/versions/`                                             |
+| `SEMANTIC_FORM_TYPE`     | Type off the semantic forms to be processed                          | `http://lblod.data.gift/vocabularies/subsidie/ApplicationForm` |
 
 ## Configuration
 
-### The `/share` volume
+Some extra configuration files/directories are needed for this service to work correctly. 
+All these extra configuration will be created within the `/share` volume.
 
-### Configuration file `config.json`
+### Form versioning
 
-This `json` file contains static-data to be used by the service.
+Within the [`FORM_VERSION_DIRECTORY`](#environment-variables) you can drop **timestamped** directories. 
+These will to contain all the files required to: construct, processes and visualize semantic-forms that can change over time.
 
-#### Properties:
+All directories are **REQUIRED** to have a **timestamp** in the [format](https://momentjs.com/docs/#/parsing/string-format/) `YYYYMMDDhhmmss` followed by a dash(-) and a title/description.
 
-- **application-form**: Contains all static-data related to the construction off the source-data for an application-form
-    - **prefixes**: collection of prefixes to be used when generating the queries
-    - **paths**: paths to be included in the source-data
-        - *best practice to include atleast the uuid and type*
-    
+#### Example directory structure:
+
+- 📂 share
+    - 📂 versions
+        - 📂 20201231153419-initial-from
+            - 📝 config.json
+            - 📝 form.ttl
+        - 📁 20201231153459-added-new-sub-form
+ 
+
+### Configuration files: config.json
+
+This file contains all static configuration data to be used by the service.
+ 
 #### Example:
 
 ```json
 {
-  "application-form": {
+  "resource": {
     "prefixes": [
       "PREFIX mu: <http://mu.semte.ch/vocabularies/core/>",
       "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
       "PREFIX dct: <http://purl.org/dc/terms/>",
-      "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>"
+      "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+      "PREFIX schema: <http://schema.org/>",
+      "PREFIX foaf: <http://xmlns.com/foaf/0.1/>"
     ],
-    "paths": [
+    "properties": [
       "rdf:type",
       "mu:uuid",
       "dct:source",
-      "skos:prefLabel"
+      "skos:prefLabel",
+      {
+        "s-prefix": "schema:contactPoint",
+        "properties": [
+          "foaf:firstName",
+          "foaf:familyName",
+          "schema:telephone",
+          "schema:email"
+        ]
+      }
     ]
   }
 }
 ```
+> **NOTE**: properties can be nested indefinitely.
     
-### Semantic Form configuration files
+### Configuration files: turtle-files
 
-Within this folder you can drop the `.ttl` semantic form configuration files.
+Within this folder you also drop the `.ttl` files to be used to: construct, processes and visualize semantic-forms
 
 #### Example
 
@@ -103,18 +157,11 @@ form:6b70a6f0-cce2-4afe-81f5-5911f45b0b27 a form:Form ;
 
 ```
 
-
-### Environment variables
-
-| Name                      | Description                                           | Default               |
-|---------------------------|-------------------------------------------------------|-----------------------|
-|       `ACTIVE_FORM`       |       The active form/form-data turtle filename.      |       `form.ttl`      |
-
 ## API
 
-### Get the current active form file.
+### Get the current active form directory.
 
-> **GET** `/active-form-file`
+> **GET** `/active-form-directory`
 
 ```
 HTTP/1.1 
@@ -124,17 +171,17 @@ content-type: application/json; charset=utf-8
 Date: Tue, 17 Nov 2020 08:47:01 GMT
 
 {
-  type: "form-file",
+  type: "form-version-directory",
   id: "1",
   attributes: {
-    uri: "/share/example-form-uri.ttl",
+    uri: "share://versions/YYYYMMDDhhmmss-active-form-directory",
   }
 }
 ```
 
-### Get all the meta(data) needed to construct a semantic form for an application-form.
+### Get all the meta(data) needed to construct a semantic form.
 
-> **GET** `/application-forms/:uuid`
+> **GET** `/semantic-forms/:uuid`
 
 #### Response
 
@@ -147,13 +194,14 @@ Date: Tue, 17 Nov 2020 08:47:01 GMT
 
 {
   "form": "",
+  "meta": "",
   "source": ""
 }
 ```
 
-### Update the source-data based on a given delta for an application-form
+### Update the source-data based on a given delta
 
-> **PUT** `/application-forms/:uuid`
+> **PUT** `/semantic-forms/:uuid`
 
 #### Request
 ```
@@ -169,9 +217,21 @@ Accept: application/json
 }
 ```
 
-### Delete all the source-data for an application-form
+### Delete all the source-data for a semantic-form
 
-> **DELETE** `/application-forms/:uuid`
+> **DELETE** `/semantic-forms/:uuid`
+
+#### Response
+```
+HTTP/1.1 
+204 No Content
+x-powered-by: Express
+Date: Tue, 17 Nov 2020 08:47:01 GMT
+```
+
+### Submit a semantic-form
+
+> **POST** `/semantic-forms/:uuid/submit`
 
 #### Response
 ```
