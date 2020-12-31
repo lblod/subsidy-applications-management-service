@@ -2,7 +2,7 @@ import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
 
-import { SemanticForm } from './lib/semanticForm';
+import { SemanticForm } from './lib/semantic-form';
 import { waitForDatabase } from './lib/util/database';
 import { VersionService } from './lib/versioning/version-service';
 
