@@ -24,7 +24,7 @@ waitForDatabase().then(async () => {
 });
 
 /**
- * Returns the active form directory.
+ * Returns the active-form-directory.
  */
 app.get('/active-form-directory', async function(req, res, next) {
   try {
@@ -41,18 +41,18 @@ app.get('/active-form-directory', async function(req, res, next) {
 });
 
 /**
- * Retrieves all the (meta)data needed to construct a form on the client side for the given application-form.
+ * Retrieves all the (meta)data needed to construct a form on the client side for the given semantic-form.
  *
- * @param uuid - unique identifier of the application-form to retrieve the form (meta)data for.
+ * @param uuid - unique identifier of the semantic-form to retrieve the form (meta)data for.
  *
  * @returns Object {
  *   form - the form triples, used to construct the actual visualisation off the form (format: `application/n-triples`)
- *   source - the source triples, all the model data for the application-form  (format: `application/n-triples`)
+ *   source - the source triples, all the model data for the semantic-form  (format: `application/n-triples`)
  *   meta - the meta triples, all the meta data used to construct the actual visualisation off the form  (format: `application/n-triples`)
  * }
  *
  */
-app.get('/application-forms/:uuid', async function(req, res, next) {
+app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
     const semanticForm = await new SemanticForm(versionService).init(uuid);
@@ -72,12 +72,12 @@ app.get('/application-forms/:uuid', async function(req, res, next) {
 });
 
 /**
- * Updates the source-data for the given application-form based on the given delta {additions, removals}.
+ * Updates the source-data for the given semantic-form based on the given delta {additions, removals}.
  *
- * @param uuid - unique identifier of the application-form to update
+ * @param uuid - unique identifier of the semantic-form to update
  * @body delta {additions, removals} - object containing the triples to be added and removed.
  */
-app.put('/application-forms/:uuid', async function(req, res, next) {
+app.put('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
 
@@ -96,11 +96,11 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
 });
 
 /**
- * Delete all the source-data for the given application-form.
+ * Delete all the source-data for the given semantic-form.
  *
- * @param uuid - unique identifier of the application-form to be deleted
+ * @param uuid - unique identifier of the semantic-form to be deleted
  */
-app.delete('/application-forms/:uuid', async function(req, res, next) {
+app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
 
   try {
@@ -117,7 +117,7 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
   }
 });
 
-app.post('/application-forms/:uuid/submit', async function(req, res, next) {
+app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
     const semanticForm = await new SemanticForm(versionService).init(uuid);
