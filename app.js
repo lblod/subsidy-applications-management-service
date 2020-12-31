@@ -2,10 +2,7 @@ import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
 
-import { Form } from './lib/form';
-import { getFileContent } from './lib/util/file';
-import { META_DATA_URI } from './env';
-import { getActiveFormFile, syncFormFiles } from './lib/form-data';
+import { SemanticForm } from './lib/semanticForm';
 import { waitForDatabase } from './lib/util/database';
 import { VersionService } from './lib/versioning/version-service';
 
@@ -23,16 +20,13 @@ app.get('/', function(req, res) {
 let versionService;
 
 waitForDatabase().then(async () => {
-  // const active = await syncFormFiles();
-  // console.log(`${active.uri} is marked the current active form-data file.`);
-  versionService = new VersionService();
-  await versionService.sync();
+  versionService = await new VersionService().init();
 });
 
 /**
- * Returns the active form file.
+ * Returns the active form directory.
  */
-app.get('/active-form-file', async function(req, res, next) {
+app.get('/active-form-directory', async function(req, res, next) {
   try {
     const dir = versionService.active;
     return res.status(200).set('content-type', 'application/json').send(dir.json);
@@ -40,7 +34,7 @@ app.get('/active-form-file', async function(req, res, next) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something unexpected went wrong while retrieving the active-form-file.`);
+    console.log(`Something unexpected went wrong while retrieving the active-form-directory.`);
     console.log(e);
     return next(e);
   }
@@ -61,20 +55,17 @@ app.get('/active-form-file', async function(req, res, next) {
 app.get('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new Form(versionService).init(uuid);
-    const source = applicationForm.source;
-    const form = applicationForm.form;
-    const meta = applicationForm.meta;
+    const semanticForm = await new SemanticForm(versionService).init(uuid);
     return res.status(200).set('content-type', 'application/json').send({
-      form,
-      source,
-      meta,
+      source: semanticForm.source,
+      form: semanticForm.form,
+      meta: semanticForm.meta,
     });
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something unexpected went wrong while retrieving the application-form with uuid <${uuid}>`);
+    console.log(`Something unexpected went wrong while retrieving the semantic-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }
@@ -91,14 +82,14 @@ app.put('/application-forms/:uuid', async function(req, res, next) {
   const delta = req.body;
 
   try {
-    const applicationForm = await new Form(versionService).init(uuid);
-    await applicationForm.update(delta);
+    const semanticForm = await new SemanticForm(versionService).init(uuid);
+    await semanticForm.update(delta);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
+    console.log(`Something went wrong while updating source-data for semantic-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }
@@ -113,14 +104,14 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
 
   try {
-    const applicationForm = await new Form(versionService).init(uuid);
-    await applicationForm.delete();
+    const semanticForm = await new SemanticForm(versionService).init(uuid);
+    await semanticForm.delete();
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something went wrong while updating source-data for application-form with uuid <${uuid}>`);
+    console.log(`Something went wrong while updating source-data for semantic-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }
@@ -129,14 +120,14 @@ app.delete('/application-forms/:uuid', async function(req, res, next) {
 app.post('/application-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const applicationForm = await new Form(versionService).init(uuid);
-    await applicationForm.submit();
+    const semanticForm = await new SemanticForm(versionService).init(uuid);
+    await semanticForm.submit();
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something went wrong while submitting application-form with uuid <${uuid}>`);
+    console.log(`Something went wrong while submitting semantic-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }
