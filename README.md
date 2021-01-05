@@ -58,7 +58,7 @@ All these extra configuration will be created within the `/share` volume.
 ### Form versioning
 
 Within the [`FORM_VERSION_DIRECTORY`](#environment-variables) you can drop **timestamped** directories. 
-These will contain all the files required to: construct, processes and visualize semantic-forms that can change over time.
+These will contain all the files required to: construct, process and visualize semantic-forms that can change over time.
 
 All directories are **REQUIRED** to have a **timestamp** in the [format](https://momentjs.com/docs/#/parsing/string-format/) `YYYYMMDDhhmmss` followed by a dash(-) and a title/description.
 
@@ -111,7 +111,7 @@ This file contains all static configuration data to be used by the service.
     
 ### Configuration files: turtle-files
 
-Within this folder you also drop the `.ttl` files to be used to: construct, processes and visualize the semantic-forms.
+Within this folder you also drop the `.ttl` files to be used to: construct, process and visualize the semantic-forms.
 
 #### Example
 
