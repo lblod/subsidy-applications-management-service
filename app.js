@@ -4,7 +4,8 @@ import bodyParser from 'body-parser';
 
 import { SemanticForm } from './lib/entities/semantic-form';
 import { waitForDatabase } from './lib/util/database';
-import { FormVersionService } from './lib/services/form-version-service';
+import { FILES, FormVersionService } from './lib/services/form-version-service';
+import { SemanticFormService } from './lib/services/semantic-form-service';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -17,10 +18,12 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
+let semanticFormService;
 let versionService;
 
 waitForDatabase().then(async () => {
   versionService = await new FormVersionService().init();
+  semanticFormService = new SemanticFormService(versionService);
 });
 
 /**
@@ -55,7 +58,7 @@ app.get('/active-form-directory', async function(req, res, next) {
 app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const semanticForm = await new SemanticForm(versionService).init(uuid);
+    const semanticForm = await semanticFormService.get(uuid);
     return res.status(200).set('content-type', 'application/json').send({
       source: semanticForm.source,
       form: semanticForm.form,
@@ -80,10 +83,8 @@ app.get('/semantic-forms/:uuid', async function(req, res, next) {
 app.put('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
-
   try {
-    const semanticForm = await new SemanticForm(versionService).init(uuid);
-    await semanticForm.update(delta);
+    await semanticFormService.update(uuid, delta);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -102,10 +103,8 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
  */
 app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
-
   try {
-    const semanticForm = await new SemanticForm(versionService).init(uuid);
-    await semanticForm.delete();
+    await semanticFormService.delete(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -125,32 +124,13 @@ app.delete('/semantic-forms/:uuid', async function(req, res, next) {
 app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const semanticForm = await new SemanticForm(versionService).init(uuid);
-    await semanticForm.submit();
+    await semanticFormService.submit(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
     console.log(`Something went wrong while submitting semantic-form with uuid <${uuid}>`);
-    console.log(e);
-    return next(e);
-  }
-});
-
-import { ModelBuilder } from './lib/builders/model-builder';
-import CONFIGURATION from './semantic-form-to-model';
-
-app.get('/testing', async function(req, res, next) {
-  try {
-    // TODO enhance each model with "root"
-    //      TESTING WITH <http://data.lblod.info/application-forms/5FF73A531BF51C0008000003>
-    const clean = await new ModelBuilder('http://data.lblod.info/application-forms/5FF73A531BF51C0008000003', CONFIGURATION).build();
-    console.log(clean);
-    console.log(clean.toNT())
-    return res.status(204).send();
-  } catch (e) {
-    console.log(`Something went wrong while testing pre-process flow`);
     console.log(e);
     return next(e);
   }
