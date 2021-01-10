@@ -138,4 +138,24 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   }
 });
 
+// import model from './model-mapper_v2';
+import { ModelBuilder } from './lib/post-process-v2/model-builder';
+
+app.get('/testing', async function(req, res, next) {
+  try {
+    // TODO enhance each model with "root"
+    //      TESTING WITH <http://data.lblod.info/application-forms/5FF73A531BF51C0008000003>
+    // const semanticForm = await new SemanticForm(versionService).init('5FF73A531BF51C0008000003');
+    const clean = await new ModelBuilder('http://data.lblod.info/application-forms/5FF73A531BF51C0008000003').build();
+    // await clean.save();
+    console.log(clean);
+    console.log(clean.toNT())
+    return res.status(204).send();
+  } catch (e) {
+    console.log(`Something went wrong while testing pre-process flow`);
+    console.log(e);
+    return next(e);
+  }
+});
+
 app.use(errorHandler);
