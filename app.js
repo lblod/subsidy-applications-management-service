@@ -2,9 +2,8 @@ import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
 
-import { SemanticForm } from './lib/entities/semantic-form';
 import { waitForDatabase } from './lib/util/database';
-import { FILES, FormVersionService } from './lib/services/form-version-service';
+import { FormVersionService } from './lib/services/form-version-service';
 import { SemanticFormService } from './lib/services/semantic-form-service';
 
 app.use(bodyParser.json({
