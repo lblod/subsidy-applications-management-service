@@ -138,7 +138,7 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   }
 });
 
-import { ModelBuilder } from './lib/post-process-v2/model-builder';
+import { ModelBuilder } from './lib/builders/model-builder';
 import CONFIGURATION from './semantic-form-to-model';
 
 app.get('/testing', async function(req, res, next) {
