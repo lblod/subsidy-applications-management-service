@@ -3,8 +3,10 @@ import { app, errorHandler } from 'mu';
 import bodyParser from 'body-parser';
 
 import { waitForDatabase } from './lib/util/database';
-import { FormVersionService } from './lib/services/form-version-service';
+import { FILES, FormVersionService } from './lib/services/form-version-service';
 import { SemanticFormService } from './lib/services/semantic-form-service';
+import { uriToPath } from './lib/util/file';
+import { ModelBuilder } from './lib/builders/model-builder';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -134,5 +136,25 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
     return next(e);
   }
 });
+
+/**
+ * Map the given semantic form to the configured model
+ * NOTE: this has no auth barrier, to be only used for dev/testing.
+ */
+app.get('/semantic-form/:uuid/map',async function(req, res, next) {
+  const uuid = req.params.uuid;
+  try {
+    const mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
+    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
+    return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
+  } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'plain/text').send(e);
+    }
+    console.log(`Something went wrong while mapping semantic-form with uuid <${uuid}>`);
+    console.log(e);
+    return next(e);
+  }
+})
 
 app.use(errorHandler);
