@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 
 import { waitForDatabase } from './lib/util/database';
 import { FILES, FormVersionService } from './lib/services/form-version-service';
-import { SemanticFormService } from './lib/services/semantic-form-service';
+import { FormManagementService } from './lib/services/form-management-service';
 import { uriToPath } from './lib/util/file';
 import { ModelBuilder } from './lib/builders/model-builder';
 
@@ -19,12 +19,12 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let semanticFormService;
+let formManagementService;
 let versionService;
 
 waitForDatabase().then(async () => {
   versionService = await new FormVersionService().init();
-  semanticFormService = new SemanticFormService(versionService);
+  formManagementService = new FormManagementService(versionService);
 });
 
 /**
@@ -59,7 +59,7 @@ app.get('/active-form-directory', async function(req, res, next) {
 app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const semanticForm = await semanticFormService.get(uuid);
+    const semanticForm = await formManagementService.get(uuid);
     return res.status(200).set('content-type', 'application/json').send({
       source: semanticForm.source,
       form: semanticForm.form,
@@ -85,7 +85,7 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
   try {
-    await semanticFormService.update(uuid, delta);
+    await formManagementService.update(uuid, delta);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -105,7 +105,7 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
 app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await semanticFormService.delete(uuid);
+    await formManagementService.delete(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -125,7 +125,7 @@ app.delete('/semantic-forms/:uuid', async function(req, res, next) {
 app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await semanticFormService.submit(uuid);
+    await formManagementService.submit(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -141,11 +141,12 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
  * Map the given semantic form to the configured model
  * NOTE: this has no auth barrier, to be only used for dev/testing.
  */
-app.get('/semantic-form/:uuid/map',async function(req, res, next) {
+app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
     const mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
-    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
+    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config,
+        {sudo: true}).build();
     return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
   } catch (e) {
     if (e.status) {
@@ -155,6 +156,6 @@ app.get('/semantic-form/:uuid/map',async function(req, res, next) {
     console.log(e);
     return next(e);
   }
-})
+});
 
 app.use(errorHandler);
