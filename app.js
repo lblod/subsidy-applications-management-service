@@ -144,9 +144,9 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
 app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
-    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config,
-        {sudo: true}).build();
+    let mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
+    mapper_config['sudo'] = true;
+    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
     return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
   } catch (e) {
     if (e.status) {
