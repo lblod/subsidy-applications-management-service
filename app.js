@@ -7,6 +7,7 @@ import { FILES, FormVersionService } from './lib/services/form-version-service';
 import { FormManagementService } from './lib/services/form-management-service';
 import { uriToPath } from './lib/util/file';
 import { ModelBuilder } from './lib/builders/model-builder';
+import { FormToModelMapper } from './lib/model-mapping/form-to-model-mapper';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -146,7 +147,8 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   try {
     let mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
     mapper_config['sudo'] = true;
-    const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
+    //const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
+    const model = await new FormToModelMapper(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
     return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
   } catch (e) {
     if (e.status) {
