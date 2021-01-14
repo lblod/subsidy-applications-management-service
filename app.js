@@ -6,7 +6,6 @@ import { waitForDatabase } from './lib/util/database';
 import { FILES, FormVersionService } from './lib/services/form-version-service';
 import { FormManagementService } from './lib/services/form-management-service';
 import { uriToPath } from './lib/util/file';
-import { ModelBuilder } from './lib/builders/model-builder';
 import { FormToModelMapper } from './lib/model-mapping/form-to-model-mapper';
 
 app.use(bodyParser.json({
