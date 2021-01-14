@@ -6,7 +6,8 @@ import { waitForDatabase } from './lib/util/database';
 import { FILES, FormVersionService } from './lib/services/form-version-service';
 import { FormManagementService } from './lib/services/form-management-service';
 import { uriToPath } from './lib/util/file';
-import { FormToModelMapper } from './lib/model-mapping/form-to-model-mapper';
+import { Model } from './lib/model-mapper/entities/model';
+import { ModelMapper } from './lib/model-mapper/model-mapper';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -144,10 +145,12 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
 app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    let mapper_config = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
-    mapper_config['sudo'] = true;
-    //const model = await new ModelBuilder(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
-    const model = await new FormToModelMapper(`http://data.lblod.info/application-forms/${uuid}`, mapper_config).build();
+
+    let {prefixes, resource_definitions, mapping} = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
+    const model = new Model(resource_definitions, prefixes);
+    const root = `http://data.lblod.info/application-forms/${uuid}`;
+    await new ModelMapper(model, {sudo: true}).map(root, mapping);
+
     return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
   } catch (e) {
     if (e.status) {
