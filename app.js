@@ -162,4 +162,22 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
+
+import { MetaGenerationService } from './lib/services/meta-generation-service';
+
+app.get('/meta-gen', async function(req, res, next) {
+  const metaService = new MetaGenerationService(versionService);
+  try {
+    const meta = await metaService.generate();
+    return res.status(200).set('content-type', 'application/n-triples').send(meta);
+  } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'plain/text').send(e);
+    }
+    console.log(`Something went wrong while generating meta-data`);
+    console.log(e);
+    return next(e);
+  }
+});
+
 app.use(errorHandler);
