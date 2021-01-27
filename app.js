@@ -4,10 +4,10 @@ import bodyParser from 'body-parser';
 
 import { waitForDatabase } from './lib/util/database';
 import { FILES, FormVersionService } from './lib/services/form-version-service';
-import { FormManagementService } from './lib/services/form-management-service';
 import { uriToPath } from './lib/util/file';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
+import { SemanticFormService } from './lib/services/semantic-form-service';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -20,12 +20,12 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let formManagementService;
 let versionService;
+let semanticFormService;
 
 waitForDatabase().then(async () => {
   versionService = await new FormVersionService().init();
-  formManagementService = new FormManagementService(versionService);
+  semanticFormService = new SemanticFormService(versionService);
 });
 
 /**
@@ -60,11 +60,11 @@ app.get('/active-form-directory', async function(req, res, next) {
 app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const semanticForm = await formManagementService.get(uuid);
+    const form_data = await semanticFormService.getSemanticFormNTriplesFor(uuid)
     return res.status(200).set('content-type', 'application/json').send({
-      source: semanticForm.source,
-      form: semanticForm.form,
-      meta: semanticForm.meta,
+      source: form_data.source,
+      form: form_data.form,
+      meta: form_data.meta,
     });
   } catch (e) {
     if (e.status) {
@@ -86,7 +86,7 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
   try {
-    await formManagementService.update(uuid, delta);
+    await semanticFormService.updateSemanticFormFor(uuid, delta);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -106,7 +106,7 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
 app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await formManagementService.delete(uuid);
+    await semanticFormService.deleteSemanticFormFor(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -126,7 +126,7 @@ app.delete('/semantic-forms/:uuid', async function(req, res, next) {
 app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await formManagementService.submit(uuid);
+    await semanticFormService.submitSemanticFormFor(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
