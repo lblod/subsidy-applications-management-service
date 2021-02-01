@@ -20,12 +20,15 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
+let cvs;
 let versionService;
 let semanticFormService;
 
 waitForDatabase().then(async () => {
+  // TODO re-enable
   versionService = await new FormVersionService().init();
-  semanticFormService = new SemanticFormService(versionService);
+  cvs = new VersionedFilesService();
+  semanticFormService = new SemanticFormService(versionService); // TODO
 });
 
 /**
@@ -60,7 +63,7 @@ app.get('/active-form-directory', async function(req, res, next) {
 app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const form_data = await semanticFormService.getFormData(uuid)
+    const form_data = await semanticFormService.getFormData(uuid);
     return res.status(200).set('content-type', 'application/json').send({
       source: form_data.source,
       form: form_data.form,
@@ -138,6 +141,8 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   }
 });
 
+/* FOR TESTING PURPOSES ONLY */
+
 /**
  * Map the given semantic form to the configured model
  * NOTE: this has no auth barrier, to be only used for dev/testing.
@@ -162,7 +167,6 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
-
 import { MetaGenerationService } from './lib/services/meta-generation-service';
 
 app.get('/meta-gen', async function(req, res, next) {
@@ -175,6 +179,22 @@ app.get('/meta-gen', async function(req, res, next) {
       return res.status(e.status).set('content-type', 'plain/text').send(e);
     }
     console.log(`Something went wrong while generating meta-data`);
+    console.log(e);
+    return next(e);
+  }
+});
+
+import { VersionedFilesService } from './library/services/versioned-files-service';
+
+app.get('/config-sync', async function(req, res, next) {
+  try {
+    const latest = await cvs.synchronize();
+    return res.status(200).set('content-type', 'application/json').send(latest);
+  } catch (e) {
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/json').send(e);
+    }
+    console.log(`Something went wrong while synchronizing versioned configuration`);
     console.log(e);
     return next(e);
   }
