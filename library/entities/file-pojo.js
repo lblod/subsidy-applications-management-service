@@ -15,6 +15,10 @@ export class FilePOJO {
     return fs.existsSync(filePOJO.filename);
   }
 
+  static writeContent(filePOJO, content) {
+    return fs.writeFileSync(filePOJO.filename, content);
+  }
+
   static generateContentHash(filePOJO) {
     return Base64.stringify(sha256(filePOJO.content));
   }
@@ -50,10 +54,12 @@ export class FilePOJO {
   get format() {
   }
 
+  // TODO should be based on the format
   get content() {
     return fs.readFileSync(this.filename, 'utf8');
   }
 
+  // TODO make sure conditionals don't crash the whole thing
   toNT() {
     let buffer = [];
     const prefixes = [

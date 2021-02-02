@@ -20,14 +20,12 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let cvs;
 let versionService;
 let semanticFormService;
 
 waitForDatabase().then(async () => {
   // TODO re-enable
-  versionService = await new FormVersionService().init();
-  cvs = new VersionedFilesService();
+  versionService = await new FormVersionService();
   semanticFormService = new SemanticFormService(versionService); // TODO
 });
 
@@ -167,13 +165,15 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
-import { MetaGenerationService } from './lib/services/meta-generation-service';
+import { ConfigSyncService } from './library/services/config-sync-service';
+import { MetaSyncService } from './library/services/meta-sync-service';
 
 app.get('/meta-gen', async function(req, res, next) {
-  const metaService = new MetaGenerationService(versionService);
+  const css = await new ConfigSyncService().init();
+  const mss = await new MetaSyncService(css).init();
+  const meta = mss.META_FILE;
   try {
-    const meta = await metaService.generate();
-    return res.status(200).set('content-type', 'application/n-triples').send(meta);
+    return res.status(200).set('content-type', 'application/json').send(meta);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'plain/text').send(e);
@@ -184,12 +184,10 @@ app.get('/meta-gen', async function(req, res, next) {
   }
 });
 
-import { VersionedFilesService } from './library/services/versioned-files-service';
-
-app.get('/config-sync', async function(req, res, next) {
+app.get('/get-config', async function(req, res, next) {
   try {
-    const latest = await cvs.synchronize();
-    return res.status(200).set('content-type', 'application/json').send(latest);
+    const conprov = await new ConfigSyncService().init();
+    return res.status(200).set('content-type', 'application/json').send(conprov);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);

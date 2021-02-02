@@ -1,8 +1,11 @@
+import { FilePOJO } from './library/entities/file-pojo';
+
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 const DATA_QUERY_CHUNK_SIZE = process.env.DATA_QUERY_CHUNK_SIZE || 50;
 const FORM_VERSION_DIRECTORY = process.env.FORM_DATA_DIR || '/share/versions/';
-const VERSIONED_FILES_ROOT = process.env.VERSIONED_FILES_ROOT || '/config/versioned/';
-const VERSIONED_FILES_WATCHER = !!(process.env.VERSIONED_FILES_WATCHER) || false;
+const VERSIONED_CONFIGURATION_ROOT = process.env.VERSIONED_CONFIGURATION_ROOT || '/config/versioned/';
+const META_DATA_ROOT = process.env.META_DATA_ROOT || '/data/meta/';
+const FILE_SYNC_WATCHER = !!(process.env.FILE_SYNC_WATCHER) || false;
 const SEMANTIC_FORM_TYPE = process.env.FORM_DATA_DIR || 'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
 const DEBUG_LOGS = !!(process.env.DEBUG_LOGS) || false;
 
@@ -31,7 +34,8 @@ export {
   SEMANTIC_FORM_TYPE,
   APP_URI,
   DATA_QUERY_CHUNK_SIZE,
-  VERSIONED_FILES_ROOT,
-  VERSIONED_FILES_WATCHER,
+  META_DATA_ROOT,
+  VERSIONED_CONFIGURATION_ROOT,
+  FILE_SYNC_WATCHER,
   DEBUG_LOGS
 };
