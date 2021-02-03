@@ -3,12 +3,12 @@ import { app, errorHandler } from 'mu';
 import bodyParser from 'body-parser';
 
 import { waitForDatabase } from './lib/util/database';
-import { uriToPath } from './lib/util/file';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
-import { SemanticFormService } from './lib/services/semantic-form-service';
+import { SemanticFormManagementService } from './lib/services/semantic-form-management-service';
 import { ConfigurationService } from './lib/services/configuration-service';
 import { MetaDataService } from './lib/services/meta-data-service';
+import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -21,29 +21,32 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let configuration;
+let config_files;
 let meta_data;
-let semanticFormService;
+let management;
 
 waitForDatabase().then(async () => {
-  // TODO re-enable
-  configuration = await new ConfigurationService().init();
-  meta_data = await new MetaDataService(configuration).init();
-  semanticFormService = new SemanticFormService(configuration, meta_data);
+  config_files = await new ConfigurationService().init();
+  meta_data = await new MetaDataService(config_files).init();
+  management = new SemanticFormManagementService(config_files, meta_data);
 });
 
 /**
  * Returns the active-form-directory.
  */
-app.get('/active-form-directory', async function(req, res, next) {
+app.get('/active-form-bundle', async function(req, res, next) {
   try {
-    const dir = versionService.active;
-    return res.status(200).set('content-type', 'application/json').send(dir.json);
+    // TODO what about config
+    const bundle = new SemanticFormBundle({
+      specification: config_files.specification,
+      meta: meta_data.latest,
+    });
+    return res.status(200).set('content-type', 'application/json').send(bundle);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something unexpected went wrong while retrieving the active-form-directory.`);
+    console.log(`Something unexpected went wrong while retrieving the active-form-bundle.`);
     console.log(e);
     return next(e);
   }
@@ -64,12 +67,8 @@ app.get('/active-form-directory', async function(req, res, next) {
 app.get('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    const form_data = await semanticFormService.getFormData(uuid);
-    return res.status(200).set('content-type', 'application/json').send({
-      source: form_data.source,
-      form: form_data.form,
-      meta: form_data.meta,
-    });
+    const {bundle} = await management.getSemanticFormBundle(uuid);
+    return res.status(200).set('content-type', 'application/json').send(bundle);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -90,7 +89,7 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   const delta = req.body;
   try {
-    await semanticFormService.updateFormData(uuid, delta);
+    await management.updateSemanticForm(uuid, delta);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -110,13 +109,13 @@ app.put('/semantic-forms/:uuid', async function(req, res, next) {
 app.delete('/semantic-forms/:uuid', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await semanticFormService.deleteFormData(uuid);
+    await management.deleteSemanticForm(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
     }
-    console.log(`Something went wrong while updating source-data for semantic-form with uuid <${uuid}>`);
+    console.log(`Something went wrong while deleting for semantic-form with uuid <${uuid}>`);
     console.log(e);
     return next(e);
   }
@@ -130,7 +129,7 @@ app.delete('/semantic-forms/:uuid', async function(req, res, next) {
 app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
-    await semanticFormService.submitSemanticForm(uuid);
+    await management.submitSemanticForm(uuid);
     return res.status(204).send();
   } catch (e) {
     if (e.status) {
@@ -152,8 +151,7 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
 
-    // TODO refactor
-    let {prefixes, resource_definitions, mapping} = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
+    let {prefixes, resource_definitions, mapping} = config_files.mapper.content;
     const model = new Model(resource_definitions, prefixes);
     const root = `http://data.lblod.info/application-forms/${uuid}`;
     await new ModelMapper(model, {sudo: true}).map(root, mapping);
@@ -169,9 +167,10 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
+// TODO face out
 app.get('/meta-gen', async function(req, res, next) {
   try {
-    const meta = meta_data.META_FILE;
+    const meta = meta_data.latest;
     return res.status(200).set('content-type', 'application/json').send(meta);
   } catch (e) {
     if (e.status) {
@@ -185,7 +184,7 @@ app.get('/meta-gen', async function(req, res, next) {
 
 app.get('/get-config', async function(req, res, next) {
   try {
-    return res.status(200).set('content-type', 'application/json').send(configuration);
+    return res.status(200).set('content-type', 'application/json').send(config_files);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);

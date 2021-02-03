@@ -1,4 +1,3 @@
-import { SemanticFile } from './lib/entities/semantic-file';
 
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 const DATA_QUERY_CHUNK_SIZE = process.env.DATA_QUERY_CHUNK_SIZE || 50;
@@ -6,7 +5,7 @@ const FORM_VERSION_DIRECTORY = process.env.FORM_DATA_DIR || '/share/versions/';
 const VERSIONED_CONFIGURATION_ROOT = process.env.VERSIONED_CONFIGURATION_ROOT || '/config/versioned/';
 const META_DATA_ROOT = process.env.META_DATA_ROOT || '/data/meta/';
 const FILE_SYNC_WATCHER = !!(process.env.FILE_SYNC_WATCHER) || false;
-const SEMANTIC_FORM_TYPE = process.env.FORM_DATA_DIR || 'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
+const SEMANTIC_FORM_TYPE = process.env.SEMANTIC_FORM_TYPE || 'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
 const DEBUG_LOGS = !!(process.env.DEBUG_LOGS) || false;
 
 const APP_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
