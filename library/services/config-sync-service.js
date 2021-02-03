@@ -1,6 +1,6 @@
 import { FileSyncService } from './file-sync-service';
 import { VersionFile } from '../entities/version-file';
-import { APP_URI, VERSIONED_CONFIGURATION_ROOT } from '../../env';
+import { APP_URI, FILE_SYNC_WATCHER, VERSIONED_CONFIGURATION_ROOT } from '../../env';
 import moment from 'moment';
 import { FilePOJO } from '../entities/file-pojo';
 
@@ -10,6 +10,8 @@ export class ConfigSyncService extends FileSyncService {
 
   constructor() {
     super(PUBLISHER, VERSIONED_CONFIGURATION_ROOT);
+    this.debug = true;
+    this.watcher = FILE_SYNC_WATCHER;
   }
 
   async init() {
@@ -18,7 +20,8 @@ export class ConfigSyncService extends FileSyncService {
   }
 
   async sync() {
-    console.log(`Started sync. of configuration files @ ${moment().toISOString()} ...`);
+    const start = moment();
+    console.log(`Started sync. of configuration files @ ${start} ...`);
 
     let {finished, missing} = await super.sync();
 
@@ -36,14 +39,6 @@ export class ConfigSyncService extends FileSyncService {
       throw buffer.join('');
     }
 
-    if (missing.length) {
-      const buffer = [];
-      buffer.push('[WARNING] Breaking changes detected!');
-      buffer.push('Configuration files that have been saved in-store are removed from disk.');
-      buffer.push(`Did something accidentally remove files in the root version route"?`);
-      console.log(buffer.join('\n'));
-    }
-
     const buffer = [];
     buffer.push('[ERROR] Missing configuration files:');
     if (!this.FORM_FILE) {
@@ -59,7 +54,8 @@ export class ConfigSyncService extends FileSyncService {
       throw buffer.join('\n');
     }
 
-    console.log(`Sync. of configuration files succeeded @${moment().toISOString()}.`);
+    const end = moment();
+    console.log(`Sync. of configuration files succeeded @${end}. That took me only ${moment.duration(start.diff(end)).humanize()}!`);
   }
 
   get FORM_FILE() {

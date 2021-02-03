@@ -169,10 +169,10 @@ import { ConfigSyncService } from './library/services/config-sync-service';
 import { MetaSyncService } from './library/services/meta-sync-service';
 
 app.get('/meta-gen', async function(req, res, next) {
-  const css = await new ConfigSyncService().init();
-  const mss = await new MetaSyncService(css).init();
-  const meta = mss.META_FILE;
   try {
+    const css = await new ConfigSyncService().init();
+    const mss = await new MetaSyncService(css).init();
+    const meta = mss.META_FILE;
     return res.status(200).set('content-type', 'application/json').send(meta);
   } catch (e) {
     if (e.status) {

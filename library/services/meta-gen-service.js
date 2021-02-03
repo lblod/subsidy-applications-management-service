@@ -1,6 +1,7 @@
 import { query } from '../../lib/util/database';
 import { bindingToNT, Graph, parse, serialize } from '../../lib/util/rdflib';
 import { v4 as uuidv4 } from 'uuid';
+import { DEBUG_LOGS } from '../../env';
 
 const META_GRAPH_TEMPLATE = 'http://meta-gen-service/';
 
@@ -14,7 +15,7 @@ export class MetaGenService {
   }
 
   async generate() {
-    const schemes = require(this.css.CONFIG_FILE.filename).meta['concept-schemes'];
+    const schemes = this.css.CONFIG_FILE.content.meta['concept-schemes'];
     try {
       const buffer = [];
       buffer.push('PREFIX skos: <http://www.w3.org/2004/02/skos/core#>');
@@ -44,8 +45,10 @@ export class MetaGenService {
       }
       return '';
     } catch (e) {
-      console.warn(e);
-      throw 'Generation off meta-data failed unexpectedly';
+      if(DEBUG_LOGS) {
+        console.warn(e);
+      }
+      throw `Generation off meta-data failed unexpectedly.\nReason: ${e.message}`;
     }
   }
 }

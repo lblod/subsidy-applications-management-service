@@ -1,8 +1,6 @@
 import { getFiles } from '../../lib/util/file';
-import { APP_URI, META_DATA_ROOT, FILE_SYNC_WATCHER } from '../../env';
 import { COMMON_GRAPHS, NTriplesMutationService } from '../../lib/services/n-triples-mutation-service';
 import { query } from '../../lib/util/database';
-import { VersionFile } from '../entities/version-file';
 import moment from 'moment';
 import groupBy from 'lodash.groupby';
 import { sleep } from '../../lib/util/generic';
@@ -18,18 +16,29 @@ import fs from 'fs';
 export class FileSyncService {
 
   constructor(publisher, root) {
+    this.debug = false;
+    this.watcher = false;
     this.root = root;
     this.publisher = publisher;
     this.syncedMap = {};
     this.mutationService = new NTriplesMutationService({sudo: true});
+  }
 
-    // TODO watcher might be cool but also a headache
-    if (FILE_SYNC_WATCHER) {
-      this.gaze = new Gaze(`${META_DATA_ROOT}/**`);
+  /**
+   * TODO:  Triggered for EVERY file change while our service re-syncs all files @ a time.
+   *        Therefore this is sub-optimal, as it triggers a full refresh for every file.
+   *
+   * @param enabled
+   */
+  set watcher(enabled) {
+    this.gaze = new Gaze(`${this.root}/**`);
+    if (enabled) {
       this.gaze.on('all', async () => {
         await sleep(1000);
         await this.sync();
       });
+    } else {
+      this.gaze.close();
     }
   }
 
@@ -46,12 +55,22 @@ export class FileSyncService {
     this.syncedMap = groupBy(finished, file => file.created.toISOString());
 
     // NOTE: gen. small console report on what occurred
-    finished = finished.map(file => new Object({status: 'DONE', file}));
-    missing = missing.map(file => new Object({status: 'LOST', file}));
-    const report = finished.concat(missing).sort((a, b) => a.file.created - b.file.created);
-    if (report.length) {
-      const buffer = report.map(line => `[${line.status}]\t${line.file.filename}`);
-      console.log(buffer.join('\n'));
+    if (this.debug) {
+      const rf = finished.map(file => new Object({status: 'DONE', file}));
+      const rm = missing.map(file => new Object({status: 'LOST', file}));
+      const report = rf.concat(rm).sort((a, b) => a.file.created - b.file.created);
+      if (report.length) {
+        const buffer = report.map(line => `[${line.status}]\t${line.file.filename}`);
+        console.log(buffer.join('\n'));
+      }
+
+      if (missing.length) {
+        const buffer = [];
+        buffer.push('[WARNING] Breaking changes detected!');
+        buffer.push('Files that have been synced in-store have been removed from disk.');
+        buffer.push(`Did something accidentally remove files in ${this.root}?`);
+        console.log(buffer.join('\n'));
+      }
     }
 
     return {finished, missing};
@@ -65,19 +84,14 @@ export class FileSyncService {
   getLatest() {
     const latest = Object.keys(this.syncedMap).sort((a, b) => moment(b) - moment(a))[0];
     if (!latest) {
-      throw 'an uptsie';
-      // return await this.synchronize();
+      return [];
     }
     return this.syncedMap[latest];
   }
 
-  // TODO not safe enough yet
   getLatestFor(matcher) {
     const matches = this.getLatest().filter(file => file.filename.includes(matcher));
-    if (matches === 0) {
-     return undefined;
-    }
-    if (matches > 1) {
+    if (matches === 0 || matches > 1) {
       return undefined;
     }
     return matches[0];

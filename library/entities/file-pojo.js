@@ -6,24 +6,31 @@ import path from 'path';
 import fs from 'fs-extra';
 import Base64 from 'crypto-js/enc-base64';
 import sha256 from 'crypto-js/sha256';
+import moment from 'moment';
 
 const NAMESPACE = '77219b1e-e23d-4828-847f-55e2d7fac687'; // NOTE: used for consistent uuid generation based on the URI
 
 export class FilePOJO {
 
-  static exists(filePOJO) {
-    return fs.existsSync(filePOJO.filename);
+  static exists(filename) {
+    if (filename instanceof FilePOJO) {
+      filename = filename.filename;
+    }
+    return fs.existsSync(filename);
   }
 
   static writeContent(filePOJO, content) {
     return fs.writeFileSync(filePOJO.filename, content);
   }
 
-  static generateContentHash(filePOJO) {
-    return Base64.stringify(sha256(filePOJO.content));
+  static generateContentHash(content) {
+    if (content instanceof FilePOJO) {
+      content = content.content;
+    }
+    return Base64.stringify(sha256(content));
   }
 
-  constructor({uri, filename, created, modified, publisher = APP_URI}) {
+  constructor({uri, filename, created = moment(), modified = moment(), publisher = APP_URI}) {
     this.physicalURI = uri ? uri : filenameToUri(filename);
     this.created = created;
     this.modified = modified;
@@ -50,16 +57,36 @@ export class FilePOJO {
     return path.extname(this.filename);
   }
 
-  // TODO
+  /**
+   * TODO:  this is hardcode for now, might consider a plugin later
+   *        if media-types really start going beyond what is expected now.
+   *
+   * @returns {string}
+   */
   get format() {
+    switch (this.extension) {
+      case '.json':
+        return 'application/json';
+      case '.ttl':
+        return 'application/n-triples';
+      case '.js':
+        return 'application/javascript';
+      default:
+        return 'plain/text';
+    }
   }
 
-  // TODO should be based on the format
   get content() {
-    return fs.readFileSync(this.filename, 'utf8');
+    switch (this.extension) {
+      case '.json':
+        return require(this.filename);
+      case '.js':
+        return require(this.filename);
+      default:
+        return fs.readFileSync(this.filename, 'utf8');
+    }
   }
 
-  // TODO make sure conditionals don't crash the whole thing
   toNT() {
     let buffer = [];
     const prefixes = [
@@ -77,18 +104,19 @@ export class FilePOJO {
       uuid: sparqlEscape(this.uuid, 'string'),
       filename: sparqlEscape(this.filename, 'string'),
       ext: sparqlEscape(this.extension, 'string'),
+      format: sparqlEscape(this.format, 'string'),
       created: sparqlEscape(this.created.toISOString(), 'date'),
       modified: sparqlEscape(this.modified.toISOString(), 'date'),
       publisher: `<${this.publisher}>`,
     };
 
     buffer.push(prefixes.join('\n'));
+
     // NOTE: virtual copy off the file
     buffer.push(`${escaped.virtualURI} a nfo:FileDataObject .`);
     buffer.push(`${escaped.virtualURI} mu:uuid ${escaped.uuid} .`);
     buffer.push(`${escaped.virtualURI} nfo:fileName ${escaped.filename} .`);
-    // TODO
-    // buffer.push(`<${this.uri}> dct:format  .`);
+    buffer.push(`${escaped.virtualURI} dct:format ${escaped.format}.`);
     buffer.push(`${escaped.virtualURI} dbpedia:fileExtension ${escaped.ext} .`);
     buffer.push(`${escaped.virtualURI} dct:created ${escaped.created} .`);
     buffer.push(`${escaped.virtualURI} dct:modified ${escaped.created} .`);
@@ -98,14 +126,10 @@ export class FilePOJO {
     buffer.push(`${escaped.physicalURI} a nfo:FileDataObject .`);
     buffer.push(`${escaped.physicalURI} nie:dataSource ${escaped.virtualURI}.`);
     buffer.push(`${escaped.physicalURI} nfo:fileName ${escaped.filename} .`);
-    // TODO
-    // buffer.push(`<${this.uri}> dct:format  .`);
+    buffer.push(`${escaped.physicalURI} dct:format ${escaped.format}.`);
     buffer.push(`${escaped.physicalURI} dbpedia:fileExtension ${escaped.ext} .`);
     buffer.push(`${escaped.physicalURI} dct:created ${escaped.created} .`);
     buffer.push(`${escaped.physicalURI} dct:modified ${escaped.created} .`);
-
-    // TODO for meta-files
-    // buffer.push(`${escaped.physicalURI} dct:source ${escaped.source} .`);
 
     return buffer.join('\n').trim();
   }
