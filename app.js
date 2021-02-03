@@ -3,11 +3,12 @@ import { app, errorHandler } from 'mu';
 import bodyParser from 'body-parser';
 
 import { waitForDatabase } from './lib/util/database';
-import { FILES, FormVersionService } from './lib/services/form-version-service';
 import { uriToPath } from './lib/util/file';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
 import { SemanticFormService } from './lib/services/semantic-form-service';
+import { ConfigurationService } from './lib/services/configuration-service';
+import { MetaDataService } from './lib/services/meta-data-service';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -20,13 +21,15 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let versionService;
+let configuration;
+let meta_data;
 let semanticFormService;
 
 waitForDatabase().then(async () => {
   // TODO re-enable
-  versionService = await new FormVersionService();
-  semanticFormService = new SemanticFormService(versionService); // TODO
+  configuration = await new ConfigurationService().init();
+  meta_data = await new MetaDataService(configuration).init();
+  semanticFormService = new SemanticFormService(configuration, meta_data);
 });
 
 /**
@@ -149,6 +152,7 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   const uuid = req.params.uuid;
   try {
 
+    // TODO refactor
     let {prefixes, resource_definitions, mapping} = require(uriToPath(`${versionService.active.uri}/${FILES.mapper}`));
     const model = new Model(resource_definitions, prefixes);
     const root = `http://data.lblod.info/application-forms/${uuid}`;
@@ -165,14 +169,9 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
-import { ConfigSyncService } from './library/services/config-sync-service';
-import { MetaSyncService } from './library/services/meta-sync-service';
-
 app.get('/meta-gen', async function(req, res, next) {
   try {
-    const css = await new ConfigSyncService().init();
-    const mss = await new MetaSyncService(css).init();
-    const meta = mss.META_FILE;
+    const meta = meta_data.META_FILE;
     return res.status(200).set('content-type', 'application/json').send(meta);
   } catch (e) {
     if (e.status) {
@@ -186,8 +185,7 @@ app.get('/meta-gen', async function(req, res, next) {
 
 app.get('/get-config', async function(req, res, next) {
   try {
-    const conprov = await new ConfigSyncService().init();
-    return res.status(200).set('content-type', 'application/json').send(conprov);
+    return res.status(200).set('content-type', 'application/json').send(configuration);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);

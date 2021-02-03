@@ -1,4 +1,4 @@
-import { FilePOJO } from './library/entities/file-pojo';
+import { SemanticFile } from './lib/entities/semantic-file';
 
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 const DATA_QUERY_CHUNK_SIZE = process.env.DATA_QUERY_CHUNK_SIZE || 50;
