@@ -1,7 +1,7 @@
-
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 const SERVICE_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
-const SEMANTIC_FORM_TYPE = process.env.SEMANTIC_FORM_TYPE || 'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
+const SEMANTIC_FORM_TYPE = process.env.SEMANTIC_FORM_TYPE ||
+    'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
 
 const MUTATION_QUERY_CHUNK_SIZE = process.env.MUTATION_QUERY_CHUNK_SIZE || 50;
 
@@ -12,6 +12,7 @@ const META_DATA_ROOT = process.env.META_DATA_ROOT || '/data/meta/';
 const META_DATA_CRON = process.env.META_DATA_CRON || undefined;
 
 const DEBUG_LOGS = !!(process.env.DEBUG_LOGS) || false;
+const DEV_ENV = process.env.NODE_ENV && (process.env.NODE_ENV === 'development');
 
 export {
   SERVICE_NAME,
@@ -22,5 +23,6 @@ export {
   VERSIONED_CONFIGURATION_WATCHER,
   META_DATA_ROOT,
   META_DATA_CRON,
-  DEBUG_LOGS
+  DEBUG_LOGS,
+  DEV_ENV,
 };
