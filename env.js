@@ -11,11 +11,9 @@ const MUTATION_QUERY_CHUNK_SIZE = process.env.MUTATION_QUERY_CHUNK_SIZE || 50;
 
 const VERSIONED_CONFIGURATION_ROOT = process.env.VERSIONED_CONFIGURATION_ROOT || '/config/versions/';
 const VERSIONED_CONFIGURATION_WATCHER = process.env.VERSIONED_CONFIGURATION_WATCHER;
-console.log(process.env.VERSIONED_CONFIGURATION_WATCHER)
 
 const META_DATA_ROOT = process.env.META_DATA_ROOT || '/data/meta-files/';
 const META_DATA_CRON = process.env.META_DATA_CRON
-console.log(process.env.VERSIONED_CONFIGURATION_WATCHER)
 
 const DEBUG_LOGS = process.env.DEBUG_LOGS;
 const DEV_ENV = process.env.NODE_ENV && (process.env.NODE_ENV === 'development');
