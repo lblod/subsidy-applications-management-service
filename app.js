@@ -5,11 +5,10 @@ import bodyParser from 'body-parser';
 import { waitForDatabase } from './lib/util/database';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
-import { SemanticFormManagementService } from './lib/services/semantic-form-management-service';
-import { ConfigurationService } from './lib/services/configuration-service';
-import { MetaDataService } from './lib/services/meta-data-service';
-import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
-import { SourceDataGenerationService } from './lib/services/source-data-generation-service';
+import { SemanticFormManagement } from './lib/services/semantic-form-management';
+import { Configuration } from './lib/services/configuration';
+import { MetaData } from './lib/services/meta-data';
+import { SourceDataGeneration } from './lib/services/source-data-generation';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -27,22 +26,22 @@ let meta_data;
 let management;
 
 waitForDatabase().then(async () => {
-  config_files = await new ConfigurationService().init();
-  meta_data = await new MetaDataService(config_files).init();
-  management = new SemanticFormManagementService(config_files, meta_data);
+  config_files = await new Configuration().init();
+  meta_data = await new MetaData(config_files).init();
+  management = new SemanticFormManagement(config_files, meta_data);
 });
 
 /**
- * Returns the active-form-directory.
+ * Returns the latest sources to be used on a semantic-form.
  */
-app.get('/active-form-bundle', async function(req, res, next) {
+app.get('/latest-sources', async function(req, res, next) {
   try {
-    // TODO what about config
-    const bundle = new SemanticFormBundle({
-      specification: config_files.specification,
+    const sources = {
+      form: config_files.specification,
+      config: config_files.config,
       meta: meta_data.latest,
-    });
-    return res.status(200).set('content-type', 'application/json').send(bundle);
+    }
+    return res.status(200).set('content-type', 'application/json').send(sources);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -168,24 +167,10 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   }
 });
 
-// TODO face out
-app.get('/meta-gen', async function(req, res, next) {
-  try {
-    const meta = meta_data.latest;
-    return res.status(200).set('content-type', 'application/json').send(meta);
-  } catch (e) {
-    if (e.status) {
-      return res.status(e.status).set('content-type', 'plain/text').send(e);
-    }
-    console.log(`Something went wrong while generating meta-data`);
-    console.log(e);
-    return next(e);
-  }
-});
-
+// TODO: remove or replace
 app.get('/gen-source', async function(req, res, next) {
   try {
-    const source = new SourceDataGenerationService(config_files);
+    const source = new SourceDataGeneration(config_files);
     const out = source.generate();
     return res.status(200).set('content-type', 'application/json').send(out);
   } catch (e) {
