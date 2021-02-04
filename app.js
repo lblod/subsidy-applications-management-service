@@ -9,6 +9,7 @@ import { SemanticFormManagementService } from './lib/services/semantic-form-mana
 import { ConfigurationService } from './lib/services/configuration-service';
 import { MetaDataService } from './lib/services/meta-data-service';
 import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
+import { SourceDataGenerationService } from './lib/services/source-data-generation-service';
 
 app.use(bodyParser.json({
   type: function(req) {
@@ -182,9 +183,11 @@ app.get('/meta-gen', async function(req, res, next) {
   }
 });
 
-app.get('/get-config', async function(req, res, next) {
+app.get('/gen-source', async function(req, res, next) {
   try {
-    return res.status(200).set('content-type', 'application/json').send(config_files);
+    const source = new SourceDataGenerationService(config_files);
+    const out = source.generate();
+    return res.status(200).set('content-type', 'application/json').send(out);
   } catch (e) {
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
