@@ -6,7 +6,7 @@ import { waitForDatabase } from './lib/util/database';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
 import { SemanticFormManagement } from './lib/services/semantic-form-management';
-import { Configuration } from './lib/services/configuration';
+import { ConfigurationFiles } from './lib/services/configuration-files';
 import { MetaFiles } from './lib/services/meta-files';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SERVICE_NAME } from './env';
@@ -37,7 +37,7 @@ let management;
  * NOTE: on restart off a stack we need to wait for the database to be ready.
  */
 waitForDatabase().then(async () => {
-  config_files = await new Configuration().init();
+  config_files = await new ConfigurationFiles().init();
   meta_files = await new MetaFiles(config_files).init();
   management = new SemanticFormManagement(config_files, meta_files);
 });
