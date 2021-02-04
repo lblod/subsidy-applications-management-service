@@ -7,7 +7,7 @@ import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
 import { SemanticFormManagement } from './lib/services/semantic-form-management';
 import { Configuration } from './lib/services/configuration';
-import { MetaData } from './lib/services/meta-data';
+import { MetaFiles } from './lib/services/meta-files';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SERVICE_NAME } from './env';
 
@@ -30,7 +30,7 @@ app.get('/', function(req, res) {
 });
 
 let config_files;
-let meta_data;
+let meta_files;
 let management;
 
 /**
@@ -38,8 +38,8 @@ let management;
  */
 waitForDatabase().then(async () => {
   config_files = await new Configuration().init();
-  meta_data = await new MetaData(config_files).init();
-  management = new SemanticFormManagement(config_files, meta_data);
+  meta_files = await new MetaFiles(config_files).init();
+  management = new SemanticFormManagement(config_files, meta_files);
 });
 
 /**
@@ -59,7 +59,7 @@ app.get('/latest-sources', async function(req, res) {
     const sources = {
       form: config_files.specification,
       config: config_files.config,
-      meta: meta_data.latest,
+      meta: meta_files.latest,
     };
     return res.status(200).set('content-type', 'application/json').send(sources);
   } catch (e) {
@@ -206,7 +206,7 @@ app.get('/semantic-form/:uuid/generate-source', async function(req, res, next) {
   if (DEV_ENV) {
     const uuid = req.params.uuid;
     try {
-      const source = new SourceDataExtractor(config_files);
+      const source = new SourceDataExtractor();
       const uri = `http://data.lblod.info/application-forms/${uuid}`;
       const definition = config_files.config.content['resource'];
       const source_file = await source.extract(uri, definition);
