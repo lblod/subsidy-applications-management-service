@@ -1,4 +1,4 @@
-FROM semtech/mu-javascript-template:1.5.0-beta.1
+FROM semtech/mu-javascript-template:1.4.0
 LABEL maintainer=""
 
 ENV LOG_SPARQL_ALL null
