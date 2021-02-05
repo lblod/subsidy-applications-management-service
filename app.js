@@ -9,7 +9,8 @@ import { SemanticFormManagement } from './lib/services/semantic-form-management'
 import { ConfigurationFiles } from './lib/services/configuration-files';
 import { MetaFiles } from './lib/services/meta-files';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
-import { DEV_ENV, SERVICE_NAME } from './env';
+import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
+import { MetaDataExtractor } from './lib/services/meta-data-extractor';
 
 /**
  * Setup and API.
@@ -22,7 +23,7 @@ app.use(bodyParser.json({
 }));
 
 /**
- * Hello world (basic is up test).
+ * Hello world (basic is alive test).
  */
 app.get('/', function(req, res) {
   const message = `Hey there, you have reached ${SERVICE_NAME}! Seems like I\'m doing just fine, have a nice day! :)`;
@@ -37,9 +38,15 @@ let management;
  * NOTE: on restart off a stack we need to wait for the database to be ready.
  */
 waitForDatabase().then(async () => {
-  config_files = await new ConfigurationFiles().init();
-  meta_files = await new MetaFiles(config_files).init();
-  management = new SemanticFormManagement(config_files, meta_files);
+  try {
+    config_files = await new ConfigurationFiles().init();
+    meta_files = await new MetaFiles(config_files).init();
+    management = new SemanticFormManagement(config_files, meta_files);
+  } catch (e) {
+    console.error(e);
+    console.log('Service failed to start because off an unexpected error, closing ...');
+    process.exit();
+  }
 });
 
 /**
@@ -54,7 +61,7 @@ waitForDatabase().then(async () => {
  * }
  *
  */
-app.get('/latest-sources', async function(req, res) {
+app.get('/sources/latest', async function(req, res) {
   try {
     const sources = {
       form: config_files.specification,
@@ -151,7 +158,7 @@ app.delete('/semantic-forms/:uuid', async function(req, res) {
  *
  * @param uuid - unique identifier of the semantic-form to be submitted
  */
-app.post('/semantic-forms/:uuid/submit', async function(req, res, next) {
+app.post('/semantic-forms/:uuid/submit', async function(req, res) {
   const uuid = req.params.uuid;
   try {
     await management.submitSemanticForm(uuid);
@@ -183,7 +190,7 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
     try {
       let {prefixes, resource_definitions, mapping} = config_files.mapper.content;
       const model = new Model(resource_definitions, prefixes);
-      const root = `http://data.lblod.info/application-forms/${uuid}`;
+      const root = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
       await new ModelMapper(model, {sudo: true}).map(root, mapping);
 
       return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
@@ -197,26 +204,49 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
 });
 
 /**
- * Generate source-data for the semantic-form with the given UUID.
+ * Get the source-data for the semantic-form with the given UUID.
  *
  * @param uuid - unique identifier of the semantic-form to be mapped
  * @returns string - n-triple generated source-data
  */
-app.get('/semantic-form/:uuid/generate-source', async function(req, res, next) {
+app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
   if (DEV_ENV) {
     const uuid = req.params.uuid;
     try {
-      const source = new SourceDataExtractor();
-      const uri = `http://data.lblod.info/application-forms/${uuid}`;
+      const extractor = new SourceDataExtractor({sudo: true});
+      const uri = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
       const definition = config_files.config.content['resource'];
-      const source_file = await source.extract(uri, definition);
-      return res.status(200).set('content-type', 'application/json').send(source_file.content);
+      const source = await extractor.extract(uri, definition);
+      return res.status(200).set('content-type', 'application/json').send(source);
     } catch (e) {
       if (e.status) {
         return res.status(e.status).set('content-type', 'application/json').send(e);
       }
-      console.log(`Something went wrong generating source-data`);
+      console.log(`Something went wrong extracting source-data`);
       console.log(e);
+      return next(e);
+    }
+  }
+  return res.status(403).set('content-type', 'application/n-triples').send();
+});
+
+/**
+ * Get meta-data.
+ *
+ * @returns string - n-triple meta-data
+ */
+app.get('/meta-data', async function(req, res, next) {
+  if (DEV_ENV) {
+    try {
+      // NOTE: by default we take the latest.
+      let meta = meta_files.latest.content;
+      // NOTE: if a request body was given, we create meta-data based on this.
+      if (req.body.length > 0) {
+        const schemes = req.body;
+        meta = await new MetaDataExtractor().extract(schemes);
+      }
+      return res.status(200).set('content-type', 'application/json').send(meta);
+    } catch (e) {
       return next(e);
     }
   }
