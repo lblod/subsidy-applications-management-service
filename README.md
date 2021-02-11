@@ -45,10 +45,10 @@ Provided [environment variables](https://docs.docker.com/compose/environment-var
 
 | Name                     | Description                                                          | Default                                                        |
 | ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `SERVICE_NAME`           | The name off the service                                             | `subsidy-application-management-service`                       |
-| `DATA_QUERY_CHUNK_SIZE`  | Represents the max amount off triples allowed within a query request | `50`                                                           |
-| `FORM_VERSION_DIRECTORY` | Root directory off the form version directories                      | `/share/versions/`                                             |
-| `SEMANTIC_FORM_TYPE`     | Type off the semantic forms to be processed                          | `http://lblod.data.gift/vocabularies/subsidie/ApplicationForm` |
+| `SERVICE_NAME`           | The name of the service                                             | `subsidy-application-management-service`                       |
+| `DATA_QUERY_CHUNK_SIZE`  | Represents the max amount of triples allowed within a query request | `50`                                                           |
+| `FORM_VERSION_DIRECTORY` | Root directory of the form version directories                      | `/share/versions/`                                             |
+| `SEMANTIC_FORM_TYPE`     | Type of the semantic forms to be processed                          | `http://lblod.data.gift/vocabularies/subsidie/ApplicationForm` |
 
 ## FormData
 

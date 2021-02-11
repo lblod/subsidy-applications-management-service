@@ -35,7 +35,7 @@ let meta_files;
 let management;
 
 /**
- * NOTE: on restart off a stack we need to wait for the database to be ready.
+ * NOTE: on restart of a stack we need to wait for the database to be ready.
  */
 waitForDatabase().then(async () => {
   try {
@@ -44,7 +44,7 @@ waitForDatabase().then(async () => {
     management = new SemanticFormManagement(config_files, meta_files);
   } catch (e) {
     console.error(e);
-    console.log('Service failed to start because off an unexpected error, closing ...');
+    console.log('Service failed to start because of an unexpected error, closing ...');
     process.exit();
   }
 });
