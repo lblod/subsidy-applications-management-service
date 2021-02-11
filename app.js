@@ -63,11 +63,7 @@ waitForDatabase().then(async () => {
  */
 app.get('/sources/latest', async function(req, res) {
   try {
-    const sources = {
-      form: config_files.specification,
-      config: config_files.config,
-      meta: meta_files.latest,
-    };
+    const sources = management.getLatestSources();
     return res.status(200).set('content-type', 'application/json').send(sources);
   } catch (e) {
     const response = {
@@ -213,10 +209,10 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
   if (DEV_ENV) {
     const uuid = req.params.uuid;
     try {
+      // TODO redo with new spec
       const extractor = new SourceDataExtractor({sudo: true});
       const uri = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
-      const definition = config_files.config.content['resource'];
-      const source = await extractor.extract(uri, definition);
+      const source = await extractor.extract(uri, config_files.specification.definition);
       return res.status(200).set('content-type', 'application/json').send(source);
     } catch (e) {
       if (e.status) {
