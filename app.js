@@ -209,7 +209,6 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
   if (DEV_ENV) {
     const uuid = req.params.uuid;
     try {
-      // TODO redo with new spec
       const extractor = new SourceDataExtractor({sudo: true});
       const uri = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
       const source = await extractor.extract(uri, configuration.specification.definition);
