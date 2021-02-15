@@ -30,8 +30,8 @@ app.get('/', function(req, res) {
   res.send(message);
 });
 
-let config_files;
-let meta_files;
+let configuration;
+let meta;
 let management;
 
 /**
@@ -39,9 +39,9 @@ let management;
  */
 waitForDatabase().then(async () => {
   try {
-    config_files = await new ConfigurationFiles().init();
-    meta_files = await new MetaFiles(config_files).init();
-    management = new SemanticFormManagement(config_files, meta_files);
+    configuration = await new ConfigurationFiles().init();
+    meta = await new MetaFiles(configuration).init();
+    management = new SemanticFormManagement(configuration, meta);
   } catch (e) {
     console.error(e);
     console.log('Service failed to start because of an unexpected error, closing ...');
@@ -184,7 +184,7 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
   if (DEV_ENV) {
     const uuid = req.params.uuid;
     try {
-      let {prefixes, resource_definitions, mapping} = config_files.mapper.content;
+      let {prefixes, resource_definitions, mapping} = configuration.mapper.content;
       const model = new Model(resource_definitions, prefixes);
       const root = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
       await new ModelMapper(model, {sudo: true}).map(root, mapping);
@@ -212,7 +212,7 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
       // TODO redo with new spec
       const extractor = new SourceDataExtractor({sudo: true});
       const uri = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
-      const source = await extractor.extract(uri, config_files.specification.definition);
+      const source = await extractor.extract(uri, configuration.specification.definition);
       return res.status(200).set('content-type', 'application/json').send(source);
     } catch (e) {
       if (e.status) {
@@ -235,7 +235,7 @@ app.get('/meta-data', async function(req, res, next) {
   if (DEV_ENV) {
     try {
       // NOTE: by default we take the latest.
-      let meta = meta_files.latest.content;
+      let meta = meta.latest.content;
       // NOTE: if a request body was given, we create meta-data based on this.
       if (req.body.length > 0) {
         const schemes = req.body;
