@@ -1,31 +1,41 @@
+/**
+ * JS file containing all env. and derived variables.
+ */
+
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
-const DATA_QUERY_CHUNK_SIZE = process.env.DATA_QUERY_CHUNK_SIZE || 50;
-const FORM_VERSION_DIRECTORY = process.env.FORM_DATA_DIR || '/share/versions/';
-const SEMANTIC_FORM_TYPE = process.env.FORM_DATA_DIR || 'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
+const SERVICE_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
+const SEMANTIC_FORM_TYPE = process.env.SEMANTIC_FORM_TYPE ||
+    'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
+const SEMANTIC_FORM_RESOURCE_BASE = process.env.SEMANTIC_FORM_RESOURCE_BASE ||
+    'http://data.lblod.info/application-forms/';
 
-const APP_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
+const QUERY_CHUNK_SIZE = process.env.QUERY_CHUNK_SIZE || 50;
 
-const DEFAULT_CONFIG = {
-  resource: {
-    prefixes: [
-      'PREFIX mu: <http://mu.semte.ch/vocabularies/core/>',
-      'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>',
-      'PREFIX dct: <http://purl.org/dc/terms/>',
-      'PREFIX adms: <http://www.w3.org/ns/adms#>',
-    ],
-    properties: [
-      'rdf:type',
-      'mu:uuid',
-      'dct:source',
-      'adms:status',
-    ],
-  },
-};
+const VERSIONED_CONFIGURATION_ROOT = process.env.VERSIONED_CONFIGURATION_ROOT || '/config/versions/';
+const VERSIONED_CONFIGURATION_WATCHER = process.env.VERSIONED_CONFIGURATION_WATCHER;
+
+const META_DATA_ROOT = process.env.META_DATA_ROOT || '/data/meta-files/';
+const META_DATA_CRON = process.env.META_DATA_CRON;
+const META_DATA_EXTRACTION_BACKOFF_INITIAL_WAIT = process.env['META_DATA_EXTRACTION_BACKOFF_INITIAL_WAIT'] || 5000;
+const META_DATA_EXTRACTION_BACKOFF_RATE = process.env['META_DATA_EXTRACTION_BACKOFF_RATE'] || 0.3;
+const META_DATA_EXTRACTION_BACKOFF_MAX_WAIT = process.env['META_DATA_EXTRACTION_BACKOFF_MAX_WAIT'] || 600000; // 10 min
+
+const DEBUG_LOGS = process.env.DEBUG_LOGS;
+const DEV_ENV = process.env.NODE_ENV && (process.env.NODE_ENV === 'development');
 
 export {
-  DEFAULT_CONFIG,
-  FORM_VERSION_DIRECTORY,
+  SERVICE_NAME,
+  SERVICE_URI,
   SEMANTIC_FORM_TYPE,
-  APP_URI,
-  DATA_QUERY_CHUNK_SIZE,
+  SEMANTIC_FORM_RESOURCE_BASE,
+  QUERY_CHUNK_SIZE,
+  VERSIONED_CONFIGURATION_ROOT,
+  VERSIONED_CONFIGURATION_WATCHER,
+  META_DATA_ROOT,
+  META_DATA_CRON,
+  META_DATA_EXTRACTION_BACKOFF_INITIAL_WAIT,
+  META_DATA_EXTRACTION_BACKOFF_RATE,
+  META_DATA_EXTRACTION_BACKOFF_MAX_WAIT,
+  DEBUG_LOGS,
+  DEV_ENV,
 };

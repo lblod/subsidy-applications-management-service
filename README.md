@@ -12,7 +12,7 @@ This includes but is not limited to:
 
 - [**Installation**](#installation)
     - [**Environment variables**](#environment-variables)
-- [**Configuration**](#configuration)
+- [**FormData**](#configuration)
     - [**Form versioning**](#form-versioning)
         - [**Files: config.json**](#configuration-files-configjson)
         - [**Files: turtle files**](#configuration-files-turtle-files)
@@ -45,12 +45,12 @@ Provided [environment variables](https://docs.docker.com/compose/environment-var
 
 | Name                     | Description                                                          | Default                                                        |
 | ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `SERVICE_NAME`           | The name off the service                                             | `subsidy-application-management-service`                       |
-| `DATA_QUERY_CHUNK_SIZE`  | Represents the max amount off triples allowed within a query request | `50`                                                           |
-| `FORM_VERSION_DIRECTORY` | Root directory off the form version directories                      | `/share/versions/`                                             |
-| `SEMANTIC_FORM_TYPE`     | Type off the semantic forms to be processed                          | `http://lblod.data.gift/vocabularies/subsidie/ApplicationForm` |
+| `SERVICE_NAME`           | The name of the service                                             | `subsidy-application-management-service`                       |
+| `DATA_QUERY_CHUNK_SIZE`  | Represents the max amount of triples allowed within a query request | `50`                                                           |
+| `FORM_VERSION_DIRECTORY` | Root directory of the form version directories                      | `/share/versions/`                                             |
+| `SEMANTIC_FORM_TYPE`     | Type of the semantic forms to be processed                          | `http://lblod.data.gift/vocabularies/subsidie/ApplicationForm` |
 
-## Configuration
+## FormData
 
 Some extra configuration files/directories are needed for this service to work correctly. 
 All these extra configuration will be created within the `/share` volume.
@@ -72,7 +72,7 @@ All directories are **REQUIRED** to have a **timestamp** in the [format](https:/
         - 📁 20201231153459-added-new-sub-form
  
 
-### Configuration files: config.json
+### FormData files: config.json
 
 This file contains all static configuration data to be used by the service.
  
@@ -109,7 +109,7 @@ This file contains all static configuration data to be used by the service.
 ```
 > **NOTE**: properties can be nested indefinitely.
     
-### Configuration files: turtle-files
+### FormData files: turtle-files
 
 Within this folder you also drop the `.ttl` files to be used to: construct, process and visualize the semantic-forms.
 
