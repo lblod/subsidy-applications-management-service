@@ -11,6 +11,7 @@ import { MetaFiles } from './lib/services/meta-files';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
 import { MetaDataExtractor } from './lib/services/meta-data-extractor';
+import moment from 'moment';
 
 /**
  * Setup and API.
@@ -172,6 +173,21 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
   }
 });
 
+/**
+ * Sync the meta.
+ *
+ * @returns string - n-triple meta-data
+ */
+app.get('/meta/sync', async function(req, res, next) {
+  console.log(`Meta-files sync. triggered by API call at ${moment()}`);
+  try {
+    await meta.sync();
+    return res.status(200).set('content-type', 'application/json').send(meta.latest.content);
+  } catch (e) {
+    return next(e);
+  }
+});
+
 /* [FOR TESTING/DEVELOPMENT PURPOSES ONLY] */
 
 /**
@@ -226,21 +242,21 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
 });
 
 /**
- * Get meta-data.
+ * Extract meta.
  *
  * @returns string - n-triple meta-data
  */
-app.get('/meta-data', async function(req, res, next) {
+app.get('/meta/extract', async function(req, res, next) {
   if (DEV_ENV) {
     try {
       // NOTE: by default we take the latest.
-      let meta = meta.latest.content;
+      let current = meta.latest.content;
       // NOTE: if a request body was given, we create meta-data based on this.
       if (req.body.length > 0) {
         const schemes = req.body;
-        meta = await new MetaDataExtractor().extract(schemes);
+        current = await new MetaDataExtractor().extract(schemes);
       }
-      return res.status(200).set('content-type', 'application/json').send(meta);
+      return res.status(200).set('content-type', 'application/json').send(current);
     } catch (e) {
       return next(e);
     }
