@@ -12,6 +12,7 @@ import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
 import { MetaDataExtractor } from './lib/services/meta-data-extractor';
 import moment from 'moment';
+import { TailoredMetaDataExtractor } from './lib/services/tailored-meta-data-extractor';
 
 /**
  * Setup and API.
@@ -212,7 +213,7 @@ app.get('/semantic-form/:uuid/map', async function(req, res, next) {
       return next(e);
     }
   }
-  return res.status(403).set('content-type', 'application/n-triples').send();
+  return res.status(403).set('content-type', 'plain/text').send();
 });
 
 /**
@@ -238,7 +239,7 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
       return next(e);
     }
   }
-  return res.status(403).set('content-type', 'application/n-triples').send();
+  return res.status(403).set('content-type', 'plain/text').send();
 });
 
 /**
@@ -261,7 +262,22 @@ app.get('/meta/extract', async function(req, res, next) {
       return next(e);
     }
   }
-  return res.status(403).set('content-type', 'application/n-triples').send();
+  return res.status(403).set('content-type', 'plain/text').send();
+});
+
+app.get('/meta/tailored/extract', async function(req, res, next) {
+  if (DEV_ENV) {
+    try {
+      if (configuration.tailored) {
+        const delta = await new TailoredMetaDataExtractor().execute(configuration.tailored.content);
+        return res.status(200).set('content-type', 'application/json').send(delta);
+      }
+      return res.status(404).set('content-type', 'plain/text').send();
+    } catch (e) {
+      return next(e);
+    }
+  }
+  return res.status(403).set('content-type', 'plain/text').send();
 });
 
 app.use(errorHandler);
