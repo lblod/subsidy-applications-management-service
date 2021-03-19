@@ -268,8 +268,8 @@ app.get('/meta/extract', async function(req, res, next) {
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
     try {
-      if (configuration.tailored) {
-        const delta = await new TailoredMetaDataExtractor().execute(configuration.tailored.content);
+      if (configuration.tailored.meta) {
+        const delta = await new TailoredMetaDataExtractor().execute(configuration.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
