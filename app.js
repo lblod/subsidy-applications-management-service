@@ -1,17 +1,19 @@
 import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
+import moment from 'moment';
 
 import { waitForDatabase } from './lib/util/database';
 import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
-import { SemanticFormManagement } from './lib/services/semantic-form-management';
-import { ConfigurationFiles } from './lib/services/configuration-files';
+import { Configuration } from './lib/services/configuration';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
 import { MetaDataExtractor } from './lib/services/meta-data-extractor';
-import moment from 'moment';
 import { TailoredMetaDataExtractor } from './lib/services/tailored-meta-data-extractor';
+import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
+import { SemanticFormManagement } from './lib/services/semantic-form-management';
+
 
 /**
  * Setup and API.
@@ -42,10 +44,8 @@ let sources;
  */
 waitForDatabase().then(async () => {
   try {
-    sources = await new SemanticFormSources().init();
-    // configuration = await new ConfigurationFiles().init();
-    // meta = await new MetaFiles({configuration}).init();
-    // management = new SemanticFormManagement(configuration);
+    configuration = await new Configuration().init();
+    management = new SemanticFormManagement(configuration);
   } catch (e) {
     console.error(e);
     console.log('Service failed to start because of an unexpected error, closing ...');
@@ -178,7 +178,7 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
 
 /**
  * Sync the meta.
- *
+ * [TODO BROKEN]
  * @returns string - n-triple meta-data
  */
 app.get('/meta/sync', async function(req, res, next) {
@@ -246,7 +246,7 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
 
 /**
  * Extract meta.
- *
+ * [TODO BROKEN]
  * @returns string - n-triple meta-data
  */
 app.get('/meta/extract', async function(req, res, next) {
@@ -266,7 +266,9 @@ app.get('/meta/extract', async function(req, res, next) {
   }
   return res.status(403).set('content-type', 'plain/text').send();
 });
-
+/**
+ * [TODO BROKEN]
+ */
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
     try {
@@ -275,6 +277,20 @@ app.get('/meta/tailored/extract', async function(req, res, next) {
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
+    } catch (e) {
+      return next(e);
+    }
+  }
+  return res.status(403).set('content-type', 'plain/text').send();
+});
+
+app.get('/semantic-form-sources', async function(req, res, next) {
+  // NOTE example URI off a semantic-form configuration.
+  const uri = 'config://forms/contact-tracing/versions/20210324130300/form.ttl';
+  if (DEV_ENV) {
+    try {
+      const latest = await configuration.forms.getLatest(uri);
+      return res.status(200).set('content-type', 'application/json').send(latest);
     } catch (e) {
       return next(e);
     }

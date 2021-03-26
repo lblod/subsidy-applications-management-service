@@ -4,10 +4,13 @@
 
 const SERVICE_NAME = process.env.SERVICE_NAME || 'subsidy-application-management-service';
 const SERVICE_URI = `http://data.lblod.info/services/${SERVICE_NAME}`;
+
 const SEMANTIC_FORM_TYPE = process.env.SEMANTIC_FORM_TYPE ||
     'http://lblod.data.gift/vocabularies/subsidie/ApplicationForm';
 const SEMANTIC_FORM_RESOURCE_BASE = process.env.SEMANTIC_FORM_RESOURCE_BASE ||
     'http://data.lblod.info/application-forms/';
+// TODO make configurable
+const SEMANTIC_FORM_CONFIGURATION_ROOT = '/config/forms/';
 
 const QUERY_CHUNK_SIZE = process.env.QUERY_CHUNK_SIZE || 50;
 
@@ -31,6 +34,7 @@ export {
   SERVICE_URI,
   SEMANTIC_FORM_TYPE,
   SEMANTIC_FORM_RESOURCE_BASE,
+  SEMANTIC_FORM_CONFIGURATION_ROOT,
   QUERY_CHUNK_SIZE,
   VERSIONED_CONFIGURATION_ROOT,
   VERSIONED_CONFIGURATION_WATCHER,
