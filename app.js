@@ -7,7 +7,6 @@ import { Model } from './lib/model-mapper/entities/model';
 import { ModelMapper } from './lib/model-mapper/model-mapper';
 import { SemanticFormManagement } from './lib/services/semantic-form-management';
 import { ConfigurationFiles } from './lib/services/configuration-files';
-import { MetaFiles } from './lib/services/meta-files';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
 import { MetaDataExtractor } from './lib/services/meta-data-extractor';
@@ -33,17 +32,20 @@ app.get('/', function(req, res) {
 });
 
 let configuration;
-let meta;
 let management;
+let sources;
 
 /**
  * NOTE: on restart of a stack we need to wait for the database to be ready.
+ *
+ * TODO we should also try awaiting the migrations service.
  */
 waitForDatabase().then(async () => {
   try {
-    configuration = await new ConfigurationFiles().init();
-    meta = await new MetaFiles(configuration).init();
-    management = new SemanticFormManagement(configuration, meta);
+    sources = await new SemanticFormSources().init();
+    // configuration = await new ConfigurationFiles().init();
+    // meta = await new MetaFiles({configuration}).init();
+    // management = new SemanticFormManagement(configuration);
   } catch (e) {
     console.error(e);
     console.log('Service failed to start because of an unexpected error, closing ...');
