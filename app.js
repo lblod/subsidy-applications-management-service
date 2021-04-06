@@ -38,7 +38,7 @@ let management;
 /**
  * NOTE: on restart of a stack we need to wait for the database to be ready.
  *
- * TODO we should also try awaiting the migrations service.
+ * TODO: we should also try awaiting the migrations service.
  */
 waitForDatabase().then(async () => {
   try {
@@ -56,7 +56,6 @@ waitForDatabase().then(async () => {
  *
  * Sources are all the files used to construct a form within this service.
  *
- * [TODO BROKEN]
  *
  * @returns Object {
  *   form,
@@ -67,7 +66,7 @@ waitForDatabase().then(async () => {
  */
 app.get('/sources/latest', async function(req, res) {
   if (req.query.uri)
-    throw `Query param URI is required`;
+    throw `Query param form URI is required`;
   const uri = req.query.uri;
   try {
     const latest = await configuration.sources.getLatest(uri);
@@ -181,17 +180,17 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
 
 /**
  * Sync the meta.
- * [TODO BROKEN]
+ *
  * @returns string - n-triple meta-data
  */
 app.get('/meta/sync', async function(req, res, next) {
   console.log(`Meta-files sync. triggered by API call at ${moment()}`);
   try {
     await configuration.sources.syncAllMeta();
-    return res.status(200).set('content-type', 'application/json').send(meta.latest.content);
   } catch (e) {
     return next(e);
   }
+  return res.status(200).set('content-type', 'application/json').send(configuration.sources.metaByFormURI);
 });
 
 /* [FOR TESTING/DEVELOPMENT PURPOSES ONLY] */
@@ -272,7 +271,7 @@ app.get('/meta/extract', async function(req, res, next) {
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
     if (req.query.uri)
-      throw `Query param URI is required`;
+      throw `Query param form URI is required`;
     const uri = req.query.uri;
     try {
       const configuration = configuration.sources.getConfiguration(uri);
