@@ -14,7 +14,6 @@ import { TailoredMetaDataExtractor } from './lib/services/tailored-meta-data-ext
 import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
 import { SemanticFormManagement } from './lib/services/semantic-form-management';
 
-
 /**
  * Setup and API.
  */
@@ -35,7 +34,6 @@ app.get('/', function(req, res) {
 
 let configuration;
 let management;
-let sources;
 
 /**
  * NOTE: on restart of a stack we need to wait for the database to be ready.
@@ -48,7 +46,7 @@ waitForDatabase().then(async () => {
     management = new SemanticFormManagement(configuration);
   } catch (e) {
     console.error(e);
-    console.log('Service failed to start because of an unexpected error, closing ...');
+    console.warning('Service failed to start because of an error, closing ...');
     process.exit();
   }
 });
@@ -58,6 +56,8 @@ waitForDatabase().then(async () => {
  *
  * Sources are all the files used to construct a form within this service.
  *
+ * [TODO BROKEN]
+ *
  * @returns Object {
  *   form,
  *   config,
@@ -66,9 +66,12 @@ waitForDatabase().then(async () => {
  *
  */
 app.get('/sources/latest', async function(req, res) {
+  if (req.query.uri)
+    throw `Query param URI is required`;
+  const uri = req.query.uri;
   try {
-    const sources = management.getLatestSources();
-    return res.status(200).set('content-type', 'application/json').send(sources);
+    const latest = await configuration.sources.getLatest(uri);
+    return res.status(200).set('content-type', 'application/json').send(latest);
   } catch (e) {
     const response = {
       status: 500,
@@ -184,7 +187,7 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
 app.get('/meta/sync', async function(req, res, next) {
   console.log(`Meta-files sync. triggered by API call at ${moment()}`);
   try {
-    await meta.sync();
+    await configuration.sources.syncAllMeta();
     return res.status(200).set('content-type', 'application/json').send(meta.latest.content);
   } catch (e) {
     return next(e);
@@ -246,15 +249,14 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
 
 /**
  * Extract meta.
- * [TODO BROKEN]
+ *
  * @returns string - n-triple meta-data
  */
 app.get('/meta/extract', async function(req, res, next) {
   if (DEV_ENV) {
     try {
-      // NOTE: by default we take the latest.
-      let current = meta.latest.content;
       // NOTE: if a request body was given, we create meta-data based on this.
+      let current = '';
       if (req.body.length > 0) {
         const schemes = req.body;
         current = await new MetaDataExtractor().extract(schemes);
@@ -266,31 +268,19 @@ app.get('/meta/extract', async function(req, res, next) {
   }
   return res.status(403).set('content-type', 'plain/text').send();
 });
-/**
- * [TODO BROKEN]
- */
+
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
+    if (req.query.uri)
+      throw `Query param URI is required`;
+    const uri = req.query.uri;
     try {
+      const configuration = configuration.sources.getConfiguration(uri);
       if (configuration.tailored.meta) {
         const delta = await new TailoredMetaDataExtractor().execute(configuration.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
-    } catch (e) {
-      return next(e);
-    }
-  }
-  return res.status(403).set('content-type', 'plain/text').send();
-});
-
-app.get('/semantic-form-sources', async function(req, res, next) {
-  // NOTE example URI off a semantic-form configuration.
-  const uri = 'config://forms/contact-tracing/versions/20210324130300/form.ttl';
-  if (DEV_ENV) {
-    try {
-      const latest = await configuration.forms.getLatest(uri);
-      return res.status(200).set('content-type', 'application/json').send(latest);
     } catch (e) {
       return next(e);
     }
