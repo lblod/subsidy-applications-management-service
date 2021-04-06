@@ -65,18 +65,24 @@ waitForDatabase().then(async () => {
  *
  */
 app.get('/sources/latest', async function(req, res) {
-  if (req.query.uri)
-    throw `Query param form URI is required`;
-  const uri = req.query.uri;
   try {
+    if (!req.query.uri)
+      return res.status(400).set('content-type', 'application/json').send({
+        status: 400,
+        message: `Query param form URI is required`
+      });
+    const uri = req.query.uri;
     const latest = await configuration.sources.getLatest(uri);
     return res.status(200).set('content-type', 'application/json').send(latest);
   } catch (e) {
+    console.error(e);
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/json').send(e);
+    }
     const response = {
       status: 500,
       message: 'Something unexpected went wrong while trying to retrieve the latest sources.',
     };
-    console.error(e);
     return res.status(response.status).set('content-type', 'application/json').send(response);
   }
 });
