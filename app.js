@@ -270,7 +270,6 @@ app.get('/meta/tailored/extract/:uuid', async function(req, res, next) {
     try {
       if (configuration.tailored.meta) {
         const uuid = req.params.uuid;
-        const management = new SemanticFormManagement(configuration, meta);
         const form = await management.getSemanticForm(uuid, {sudo: true});
         const delta = await new TailoredMetaDataExtractor(form).execute(configuration.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
