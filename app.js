@@ -265,11 +265,14 @@ app.get('/meta/extract', async function(req, res, next) {
   return res.status(403).set('content-type', 'plain/text').send();
 });
 
-app.get('/meta/tailored/extract', async function(req, res, next) {
+app.get('/meta/tailored/extract/:uuid', async function(req, res, next) {
   if (DEV_ENV) {
     try {
       if (configuration.tailored.meta) {
-        const delta = await new TailoredMetaDataExtractor().execute(configuration.tailored.meta.content);
+        const uuid = req.params.uuid;
+        const management = new SemanticFormManagement(configuration, meta);
+        const form = await management.getSemanticForm(uuid, {sudo: true});
+        const delta = await new TailoredMetaDataExtractor(form).execute(configuration.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
