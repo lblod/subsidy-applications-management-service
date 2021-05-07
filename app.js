@@ -4,8 +4,6 @@ import bodyParser from 'body-parser';
 import moment from 'moment';
 
 import { waitForDatabase } from './lib/util/database';
-import { Model } from './lib/model-mapper/entities/model';
-import { ModelMapper } from './lib/model-mapper/model-mapper';
 import { Configuration } from './lib/services/configuration';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
@@ -200,31 +198,6 @@ app.get('/meta/sync', async function(req, res, next) {
 });
 
 /* [FOR TESTING/DEVELOPMENT PURPOSES ONLY] */
-
-/**
- * Map the semantic-form for the given UUID to the configured model-mapping.
- *
- * @param uuid - unique identifier of the semantic-form to be mapped
- * @returns string - n-triple generated model
- */
-app.get('/semantic-form/:uuid/map', async function(req, res, next) {
-  if (DEV_ENV) {
-    const uuid = req.params.uuid;
-    try {
-      let {prefixes, resource_definitions, mapping} = configuration.mapper.content;
-      const model = new Model(resource_definitions, prefixes);
-      const root = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
-      await new ModelMapper(model, {sudo: true}).map(root, mapping);
-
-      return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
-    } catch (e) {
-      console.log(`Something went wrong while mapping semantic-form with uuid "${uuid}"`);
-      console.log(e);
-      return next(e);
-    }
-  }
-  return res.status(403).set('content-type', 'plain/text').send();
-});
 
 /**
  * Get the source-data for the semantic-form with the given UUID.
