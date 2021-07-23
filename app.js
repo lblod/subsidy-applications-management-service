@@ -1,18 +1,16 @@
 import { app, errorHandler } from 'mu';
 
 import bodyParser from 'body-parser';
+import moment from 'moment';
 
 import { waitForDatabase } from './lib/util/database';
-import { Model } from './lib/model-mapper/entities/model';
-import { ModelMapper } from './lib/model-mapper/model-mapper';
-import { SemanticFormManagement } from './lib/services/semantic-form-management';
-import { ConfigurationFiles } from './lib/services/configuration-files';
-import { MetaFiles } from './lib/services/meta-files';
+import { Configuration } from './lib/services/configuration';
 import { SourceDataExtractor } from './lib/services/source-data-extractor';
 import { DEV_ENV, SEMANTIC_FORM_RESOURCE_BASE, SERVICE_NAME } from './env';
 import { MetaDataExtractor } from './lib/services/meta-data-extractor';
-import moment from 'moment';
 import { TailoredMetaDataExtractor } from './lib/services/tailored-meta-data-extractor';
+import { SemanticFormBundle } from './lib/entities/semantic-form-bundle';
+import { SemanticFormManagement } from './lib/services/semantic-form-management';
 
 /**
  * Setup and API.
@@ -33,20 +31,20 @@ app.get('/', function(req, res) {
 });
 
 let configuration;
-let meta;
 let management;
 
 /**
  * NOTE: on restart of a stack we need to wait for the database to be ready.
+ *
+ * TODO: we should also try awaiting the migrations service.
  */
 waitForDatabase().then(async () => {
   try {
-    configuration = await new ConfigurationFiles().init();
-    meta = await new MetaFiles(configuration).init();
-    management = new SemanticFormManagement(configuration, meta);
+    configuration = await new Configuration().init();
+    management = new SemanticFormManagement(configuration);
   } catch (e) {
     console.error(e);
-    console.log('Service failed to start because of an unexpected error, closing ...');
+    console.warning('Service failed to start because of an error, closing ...');
     process.exit();
   }
 });
@@ -55,6 +53,7 @@ waitForDatabase().then(async () => {
  * Returns the latest sources to be used on a semantic-form.
  *
  * Sources are all the files used to construct a form within this service.
+ *
  *
  * @returns Object {
  *   form,
@@ -65,14 +64,23 @@ waitForDatabase().then(async () => {
  */
 app.get('/sources/latest', async function(req, res) {
   try {
-    const sources = management.getLatestSources();
-    return res.status(200).set('content-type', 'application/json').send(sources);
+    if (!req.query.uri)
+      return res.status(400).set('content-type', 'application/json').send({
+        status: 400,
+        message: `Query param form URI is required`
+      });
+    const uri = req.query.uri;
+    const latest = await configuration.sources.getLatest(uri);
+    return res.status(200).set('content-type', 'application/json').send(latest);
   } catch (e) {
+    console.error(e);
+    if (e.status) {
+      return res.status(e.status).set('content-type', 'application/json').send(e);
+    }
     const response = {
       status: 500,
       message: 'Something unexpected went wrong while trying to retrieve the latest sources.',
     };
-    console.error(e);
     return res.status(response.status).set('content-type', 'application/json').send(response);
   }
 });
@@ -182,39 +190,14 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
 app.get('/meta/sync', async function(req, res, next) {
   console.log(`Meta-files sync. triggered by API call at ${moment()}`);
   try {
-    await meta.sync();
-    return res.status(200).set('content-type', 'application/json').send(meta.latest.content);
+    await configuration.sources.syncAllMeta();
   } catch (e) {
     return next(e);
   }
+  return res.status(200).set('content-type', 'application/json').send(configuration.sources.metaByFormURI);
 });
 
 /* [FOR TESTING/DEVELOPMENT PURPOSES ONLY] */
-
-/**
- * Map the semantic-form for the given UUID to the configured model-mapping.
- *
- * @param uuid - unique identifier of the semantic-form to be mapped
- * @returns string - n-triple generated model
- */
-app.get('/semantic-form/:uuid/map', async function(req, res, next) {
-  if (DEV_ENV) {
-    const uuid = req.params.uuid;
-    try {
-      let {prefixes, resource_definitions, mapping} = configuration.mapper.content;
-      const model = new Model(resource_definitions, prefixes);
-      const root = `${SEMANTIC_FORM_RESOURCE_BASE}${uuid}`;
-      await new ModelMapper(model, {sudo: true}).map(root, mapping);
-
-      return res.status(200).set('content-type', 'application/n-triples').send(model.toNT());
-    } catch (e) {
-      console.log(`Something went wrong while mapping semantic-form with uuid "${uuid}"`);
-      console.log(e);
-      return next(e);
-    }
-  }
-  return res.status(403).set('content-type', 'plain/text').send();
-});
 
 /**
  * Get the source-data for the semantic-form with the given UUID.
@@ -250,9 +233,8 @@ app.get('/semantic-form/:uuid/source-data', async function(req, res, next) {
 app.get('/meta/extract', async function(req, res, next) {
   if (DEV_ENV) {
     try {
-      // NOTE: by default we take the latest.
-      let current = meta.latest.content;
       // NOTE: if a request body was given, we create meta-data based on this.
+      let current = '';
       if (req.body.length > 0) {
         const schemes = req.body;
         current = await new MetaDataExtractor().extract(schemes);
@@ -267,7 +249,11 @@ app.get('/meta/extract', async function(req, res, next) {
 
 app.get('/meta/tailored/extract/:uuid', async function(req, res, next) {
   if (DEV_ENV) {
+    if (req.query.uri)
+      throw `Query param form URI is required`;
+    const uri = req.query.uri;
     try {
+      const configuration = configuration.sources.getConfiguration(uri);
       if (configuration.tailored.meta) {
         const uuid = req.params.uuid;
         const form = await management.getSemanticForm(uuid, {sudo: true});
