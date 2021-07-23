@@ -247,17 +247,15 @@ app.get('/meta/extract', async function(req, res, next) {
   return res.status(403).set('content-type', 'plain/text').send();
 });
 
-app.get('/meta/tailored/extract/:uuid', async function(req, res, next) {
+app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
-    if (req.query.uri)
+    if (!req.query.uri)
       throw `Query param form URI is required`;
     const uri = req.query.uri;
     try {
-      const configuration = configuration.sources.getConfiguration(uri);
-      if (configuration.tailored.meta) {
-        const uuid = req.params.uuid;
-        const form = await management.getSemanticForm(uuid, {sudo: true});
-        const delta = await new TailoredMetaDataExtractor(form).execute(configuration.tailored.meta.content);
+      const config = configuration.sources.getConfiguration(uri);
+      if (config.tailored.meta) {
+        const delta = await new TailoredMetaDataExtractor().execute(config.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
