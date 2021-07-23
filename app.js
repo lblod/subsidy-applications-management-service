@@ -249,13 +249,16 @@ app.get('/meta/extract', async function(req, res, next) {
 
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
-    if (!req.query.uri)
-      throw `Query param form URI is required`;
+    if (!req.query.uri || !req.query.form)
+      throw `Query param form config URI and application form URI is required`;
     const uri = req.query.uri;
+    const form = {
+      uri: req.query.form
+    };
     try {
       const config = configuration.sources.getConfiguration(uri);
       if (config.tailored.meta) {
-        const delta = await new TailoredMetaDataExtractor().execute(config.tailored.meta.content);
+        const delta = await new TailoredMetaDataExtractor(form).execute(config.tailored.meta.content);
         return res.status(200).set('content-type', 'application/json').send(delta);
       }
       return res.status(404).set('content-type', 'plain/text').send();
