@@ -19,7 +19,7 @@ import { SemanticFormManagement } from './lib/services/semantic-form-management'
 app.use(bodyParser.json({
   type: function(req) {
     return /^application\/json/.test(req.get('content-type'));
-  },
+  }
 }));
 
 /**
@@ -79,7 +79,7 @@ app.get('/sources/latest', async function(req, res) {
     }
     const response = {
       status: 500,
-      message: 'Something unexpected went wrong while trying to retrieve the latest sources.',
+      message: 'Something unexpected went wrong while trying to retrieve the latest sources.'
     };
     return res.status(response.status).set('content-type', 'application/json').send(response);
   }
@@ -105,7 +105,7 @@ app.get('/semantic-forms/:uuid', async function(req, res) {
     }
     const response = {
       status: 500,
-      message: `Something unexpected went wrong while retrieving the semantic-form for "${uuid}".`,
+      message: `Something unexpected went wrong while retrieving the semantic-form for "${uuid}".`
     };
     return res.status(response.status).set('content-type', 'application/json').send(response.message);
   }
@@ -130,7 +130,7 @@ app.put('/semantic-forms/:uuid', async function(req, res) {
     }
     const response = {
       status: 500,
-      message: `Something unexpected went wrong while updating the semantic-form for "${uuid}".`,
+      message: `Something unexpected went wrong while updating the semantic-form for "${uuid}".`
     };
     return res.status(response.status).set('content-type', 'application/json').send(response.message);
   }
@@ -153,7 +153,7 @@ app.delete('/semantic-forms/:uuid', async function(req, res) {
     }
     const response = {
       status: 500,
-      message: `Something unexpected went wrong while deleting the semantic-form for "${uuid}".`,
+      message: `Something unexpected went wrong while deleting the semantic-form for "${uuid}".`
     };
     return res.status(response.status).set('content-type', 'application/json').send(response.message);
   }
@@ -176,7 +176,7 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
     }
     const response = {
       status: 500,
-      message: `Something unexpected went wrong while submitting semantic-form for "${uuid}".`,
+      message: `Something unexpected went wrong while submitting semantic-form for "${uuid}".`
     };
     return res.status(response.status).set('content-type', 'application/json').send(response.message);
   }
@@ -249,7 +249,7 @@ app.get('/meta/extract', async function(req, res, next) {
 
 app.get('/meta/tailored/extract', async function(req, res, next) {
   if (DEV_ENV) {
-    if (!req.query.uri || !req.query.form)
+    if (!req.query.uri && !req.query.form)
       throw `Query param form config URI and application form URI is required`;
     const uri = req.query.uri;
     const form = {
