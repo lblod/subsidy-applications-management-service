@@ -242,7 +242,7 @@ $ mkdir -p tailored/meta
 # source data extractors
 $ mkdir -p tailored/source
 ```
-Withing these directories you'll define an `index.js` that exports an array of extractors. These will be called on enhancement of a new SemanticForm.
+Within these directories you'll define an `index.js` that exports an array of extractors. These will be called on enhancement of a new SemanticForm.
 
 > NOTE: these extractors run in the order of definition
 
