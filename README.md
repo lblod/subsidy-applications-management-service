@@ -12,7 +12,7 @@ This includes but is not limited to:
 ## Table of contents
 
 - [**Setup**](#setup)
-    - [**`mu.semte.ch` stack**](#within-a-musemtech-stack)
+    - [**In a `mu.semte.ch` stack**](#within-a-musemtech-stack)
     - [**Environment variables**](#environment-variables)
 - [**Configuration**](#configuration)
     - [**SemanticForm(s)**](#semanticforms)
