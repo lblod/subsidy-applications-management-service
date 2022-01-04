@@ -15,7 +15,6 @@ import { SemanticFormManagement } from './lib/services/semantic-form-management'
 /**
  * Setup and API.
  */
-
 app.use(bodyParser.json({
   type: function(req) {
     return /^application\/json/.test(req.get('content-type'));
@@ -43,6 +42,11 @@ waitForDatabase().then(async () => {
     configuration = await new Configuration().init();
     management = new SemanticFormManagement(configuration);
   } catch (e) {
+    /**
+     * TODO: could only happen at (re)start
+     *
+     * CHECKED
+     */
     console.error(e);
     console.warning('Service failed to start because of an error, closing ...');
     process.exit();
@@ -50,14 +54,10 @@ waitForDatabase().then(async () => {
 });
 
 /**
- * Returns the latest sources to be used on a semantic-form.
- *
- * Sources are all the files used to construct a form within this service.
- *
+ * Returns {@link SemanticFormConfiguration} paired with latest meta {@link SemanticFile} for the given URI.
  *
  * @returns Object {
  *   form,
- *   config,
  *   meta
  * }
  *
@@ -73,6 +73,12 @@ app.get('/sources/latest', async function(req, res) {
     const latest = await configuration.sources.getLatest(uri);
     return res.status(200).set('content-type', 'application/json').send(latest);
   } catch (e) {
+    /**
+     * TODO: Move this logic to a "shared" exception handling "service" that will
+     *       catch and log.
+     *
+     * CHECKED (silent errors have been tagged)
+     */
     console.error(e);
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -99,6 +105,12 @@ app.get('/semantic-forms/:uuid', async function(req, res) {
     const {bundle} = await management.getSemanticFormBundle(uuid);
     return res.status(200).set('content-type', 'application/json').send(bundle);
   } catch (e) {
+    /**
+     * TODO: Move this logic to a "shared" exception handling "service" that will
+     *       catch and log.
+     *
+     * CHECKED (silent errors have been tagged)
+     */
     console.error(e);
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -124,6 +136,12 @@ app.put('/semantic-forms/:uuid', async function(req, res) {
     await management.updateSemanticForm(uuid, delta);
     return res.status(204).send();
   } catch (e) {
+    /**
+     * TODO: Move this logic to a "shared" exception handling "service" that will
+     *       catch and log.
+     *
+     * CHECKED
+     */
     console.error(e);
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -147,6 +165,12 @@ app.delete('/semantic-forms/:uuid', async function(req, res) {
     await management.deleteSemanticForm(uuid);
     return res.status(204).send();
   } catch (e) {
+    /**
+     * TODO: Move this logic to a "shared" exception handling "service" that will
+     *       catch and log.
+     *
+     * CHECKED (silent errors have been tagged)
+     */
     console.error(e);
     if (e.status) {
       return res.status(e.status).set('content-type', 'application/json').send(e);
@@ -169,6 +193,12 @@ app.post('/semantic-forms/:uuid/submit', async function(req, res) {
   try {
     await management.submitSemanticForm(uuid);
     return res.status(204).send();
+    /**
+     * TODO: Move this logic to a "shared" exception handling "service" that will
+     *       catch and log.
+     *
+     * CHECKED (silent errors have been tagged)
+     */
   } catch (e) {
     console.error(e);
     if (e.status) {
