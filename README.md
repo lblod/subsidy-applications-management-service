@@ -391,6 +391,7 @@ HTTP/1.1
 x-powered-by: Express
 ```
 
+
 ## Development
 
 For a more detailed look in how to develop a microservices based on the [mu-javascript-template](https://github.com/mu-semtech/mu-javascript-template), we would recommend reading "[Developing with the template](https://github.com/mu-semtech/mu-javascript-template#developing-with-the-template)".
