@@ -43,8 +43,8 @@ waitForDatabase().then(async () => {
     configuration = await new Configuration().init();
     management = new SemanticFormManagement(configuration);
   } catch (e) {
+    console.error('Service failed to start because of an error, closing ...');
     console.error(e);
-    console.warning('Service failed to start because of an error, closing ...');
     process.exit();
   }
 });
