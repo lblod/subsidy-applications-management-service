@@ -56,7 +56,15 @@ kind: secret
 name: docker_password
 data: 2AZUlYntJUF5CJH2zjokcF1GJKbT/suslhgl51cJOrKwbAvjJgCDApuQncuuJFJWHHsU0Be9qFI9H5QShA1sZA==
 ---
+kind: secret
+name: docker_username
+data: Ius0xCMKP2JMzYtIRr8EZ1lUjjWn657jWAAR2SF7HK86sZsyunnpvg==
+---
+kind: secret
+name: docker_password
+data: /Ktq3Q48/uhQ+WxfQkYhivplJcU9bvV0zBDU4bZ0TtnDw/ik42QKPDXggjU+lFQYn13VEgy3L6T+nHqTVrEgDg==
+---
 kind: signature
-hmac: e8c07d942e0b3f65792093c887640b1a37702a33b0512bf88dfcb4670da824f6
+hmac: fc3eead92d9e0a25d32087880323b422dd6169a9c1ef119e415b2052f1b5688d
 
 ...
