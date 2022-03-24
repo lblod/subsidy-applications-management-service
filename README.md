@@ -225,6 +225,7 @@ form:6b70a6f0-cce2-4afe-81f5-5911f45b0b27 a form:Form ;
 > **Developer note**:
 > - `meta.schemes` is optional.
 > - properties can be nested indefinitely.
+> - ⚠️ ⚠️ ⚠️  NO EXTRA PROPERTIES BESIDES WHAT IS RELEVANT FOR THE form.ttl -> else we might have very weird side effects on the tailored data.
 
 ### [experimental] SemanticForm(s): Tailored data
 
