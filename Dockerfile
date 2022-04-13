@@ -1,5 +1,4 @@
-FROM semtech/mu-javascript-template:1.4.0
-LABEL maintainer=""
+FROM semtech/mu-javascript-template:1.6.0
 
-ENV LOG_SPARQL_ALL null
-ENV DEBUG_AUTH_HEADERS null
+ENV LOG_SPARQL_ALL "false"
+ENV DEBUG_AUTH_HEADERS "false"
