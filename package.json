@@ -1,6 +1,6 @@
 {
   "name": "subsidy-applications-management-service",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "Service that provides management related to subsidy-applications (subsidie aanvragen) semantic forms.",
   "main": "app.js",
   "scripts": {
