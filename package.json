@@ -4,7 +4,8 @@
   "description": "Service that provides management related to subsidy-applications (subsidie aanvragen) semantic forms.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "release-it"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,8 @@
     "moment": "^2.29.1",
     "rdflib": "2.1.1",
     "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "release-it": "^19.0.4"
   }
 }
