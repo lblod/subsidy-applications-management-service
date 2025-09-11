@@ -1,0 +1,13 @@
+steps:
+  build-feature:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: ${CI_REPO%%-service}
+      tags: "feature-${CI_COMMIT_BRANCH##feature/}"
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+when:
+  branch: [feature/*]
+  event: push
